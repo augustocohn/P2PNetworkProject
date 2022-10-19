@@ -1,5 +1,9 @@
 package peer;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -10,36 +14,71 @@ import java.util.PriorityQueue; //implemented with heap ( log(n) operations)
 
 public class peerProcess extends Thread {
 
-    // current peer's ID number
-    private Integer peerID;
+    private static final int listening_port = 8000;
 
-    // this peer's current pieces (tracks what it has and what is needed)
-    private byte[] bitField;
+    private String message;    //message received from the client
+    private String MESSAGE;    //uppercase message send to the client
+    private Socket connection;
+    private ObjectInputStream in;	//stream read from the socket
+    private ObjectOutputStream out;    //stream write to the socket
+    private int clientID;		//The index number of the client
 
-    // add new when new connection made
-    // update whenever a "have" message is received
-    // key is peerID, value is that neighbors bitField
-    private HashMap<Integer ,byte[]> neighbor_bitFields;
+    public peerProcess(Socket connection, int clientID) {
 
-    // add to when requested a piece
-    // check if present when requesting to not re-request
-    // remove if choked by a requester
-    // key is piece index, value is peerID
-    private HashMap<Integer, Integer> requested_pieces;
+        this.connection = connection;
+        this.clientID = clientID;
+    }
 
-    // update on given interval
-    private HashSet<Integer> unchoked_neighbors;
 
-    // update on given interval
-    private HashSet<Integer> choked_neighbors;
+    public void run() {
 
-    // recalculate after given interval
-    // top k are the preferred neighbors
-    // if there are any extra neighbors, of those one will be randomly unchoked on given interval
-    private PriorityQueue<Integer> interested_neighbors;
 
-    //will be NULL if <k preferred neighbors at a given time (will account for in functionality)
-    private Integer optimistically_unchoked;
+        try {
+            out = new ObjectOutputStream(connection.getOutputStream());
+            out.flush();
+            in = new ObjectInputStream(connection.getInputStream());
+
+            try {
+
+                while(true) {
+                    message = (String)in.readObject();
+                    System.out.println("Received ur mom: " + message);
+                    MESSAGE = message.toUpperCase();
+                    sendMessage(MESSAGE); //implement later
+                }
+            } catch(ClassNotFoundException classnot) {
+                System.out.println("Class not found: " + classnot);
+            }
+
+        } catch(IOException ioException){
+            System.out.println("Disconnect with Client " + clientID);
+        }
+        finally{
+            //Close connections
+            try{
+                in.close();
+                out.close();
+                connection.close();
+            }
+            catch(IOException ioException){
+                System.out.println("Disconnect with Client " + clientID);
+            }
+        }
+    }
+
+
+    //send a message to the output stream
+    public void sendMessage(String msg)
+    {
+        try{
+            out.writeObject(msg);
+            out.flush();
+            System.out.println("Send message: " + msg + " to Client " + clientID);
+        }
+        catch(IOException ioException){
+            ioException.printStackTrace();
+        }
+    }
 
 
 
