@@ -10,7 +10,7 @@ public class PeerConfigParser {
     private ArrayList<PeerMetaData> peers;
 
     public PeerConfigParser(){
-        peers = new ArrayList<PeerMetaData>();
+        peers = new ArrayList<>();
     }
 
     public ArrayList<PeerMetaData> getPeersMetaData(){

@@ -4,7 +4,6 @@ import parsers.PeerConfigParser;
 import peer.PeerMetaData;
 
 import java.util.ArrayList;
-import java.util.Objects;
 
 public class PeerConfigParserTest {
 
@@ -18,7 +17,7 @@ public class PeerConfigParserTest {
         PeerMetaData peer1 = new PeerMetaData(1001, "localhost", 8000, false);
         PeerMetaData peer2 = new PeerMetaData(1002, "localhost", 8001, false);
 
-        ArrayList<PeerMetaData> truth = new ArrayList<PeerMetaData>();
+        ArrayList<PeerMetaData> truth = new ArrayList<>();
         truth.add(peer1);
         truth.add(peer2);
 
