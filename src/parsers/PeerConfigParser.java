@@ -1,14 +1,17 @@
 package parsers;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Scanner;
+import java.io.*;
+import java.util.*;
+
+import peer.PeerMetaData;
 
 public class PeerConfigParser {
 
     private ArrayList<PeerMetaData> peers;
 
-    public PeerConfigParser(){}
+    public PeerConfigParser(){
+        peers = new ArrayList<PeerMetaData>();
+    }
 
     public ArrayList<PeerMetaData> getPeersMetaData(){
         return peers;
@@ -16,12 +19,15 @@ public class PeerConfigParser {
 
     public void parse(String filename) {
         try{
-            Scanner scanner = new Scanner(new File(filename));
-            while(scanner.hasNextLine()) {
-                peers.add(parseLine(scanner.nextLine()));
+            //Scanner scanner = new Scanner(new File(filename));
+            BufferedReader in = new BufferedReader(new FileReader(filename));
+            String line = in.readLine();
+            while(line != null) {
+                peers.add(parseLine(line));
+                line = in.readLine();
             }
         } catch(Exception e){
-            System.out.print("Failed to open file");
+            System.out.println("Failed to open file");
         }
     }
 
@@ -38,36 +44,6 @@ public class PeerConfigParser {
         file_ = Integer.parseInt(tokens[3]) == 1;
 
         return new PeerMetaData(peerID_, hostname_, listeningPort_, file_);
-    }
-
-    public class PeerMetaData{
-        private final int peerID;
-        private final String hostname;
-        private final int listeningPort;
-        private final boolean file;
-
-        public PeerMetaData(int peerID_, String hostname_, int listeningPort_, boolean file_){
-            this.peerID = peerID_;
-            this.hostname = hostname_;
-            this.listeningPort = listeningPort_;
-            this.file = file_;
-        }
-
-        public int getPeerID(){
-            return peerID;
-        }
-
-        public String getHostname() {
-            return hostname;
-        }
-
-        public int getListeningPort() {
-            return listeningPort;
-        }
-
-        public boolean hasFile(){
-            return file;
-        }
     }
 
 }
