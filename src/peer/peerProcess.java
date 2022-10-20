@@ -1,5 +1,7 @@
 package peer;
 
+import parsers.PeerConfigParser;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -8,6 +10,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.PriorityQueue; //implemented with heap ( log(n) operations)
+
+import java.net.ServerSocket;
+
 // this file will essentially be called by another file and all it does is create a process (or thread) for a particular
 // peer to start running
 
@@ -23,14 +28,43 @@ public class peerProcess extends Thread {
     private ObjectOutputStream out;    //stream write to the socket
     private int clientID;		//The index number of the client
 
-    public peerProcess(Socket connection, int clientID) {
+    private ServerSocket serverSocket;
+    private final int port_num;
+    private final int peer_id;
 
-        this.connection = connection;
-        this.clientID = clientID;
+    public peerProcess(int port_num, int peer_id) {
+
+        this.port_num = port_num;
+        this.peer_id = peer_id;
+
     }
 
 
     public void run() {
+
+        try {
+            serverSocket = new ServerSocket(this.port_num);
+
+            PeerConfigParser parser = new PeerConfigParser();
+            parser.parse("cfg\\PeerInfo.cfg");
+            ArrayList<PeerMetaData> peerCfgInfo = parser.getPeersMetaData();
+
+            int connection_count = 0;
+
+            while(connection_count != peerCfgInfo.size()) {
+
+                // wait for (k - 1) incoming connections
+
+
+                connection_count++;
+            }
+
+
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+
+
 
 
         try {

@@ -1,5 +1,8 @@
 package peer;
 
+import parsers.PeerConfigParser;
+
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.PriorityQueue;
@@ -36,6 +39,28 @@ public class peer {
 
     //will be NULL if <k preferred neighbors at a given time (will account for in functionality)
     private Integer optimistically_unchoked;
+
+
+    public peer(int peerID) {
+        this.peerID = peerID;
+
+        //TODO need to find a way to make this more efficient
+        PeerConfigParser parser = new PeerConfigParser();
+        parser.parse("cfg\\PeerInfo.cfg");
+        ArrayList<PeerMetaData> peerCfgInfo = parser.getPeersMetaData();
+
+
+    }
+
+
+    public void run() {
+
+
+
+
+    }
+
+
 
 
 }
