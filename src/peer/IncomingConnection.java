@@ -26,7 +26,9 @@ public class IncomingConnection extends Thread {
             inputStream = new ObjectInputStream(portConnection.getInputStream());
             outputStream = new ObjectOutputStream(portConnection.getOutputStream());
 
-            
+            // handshake stuff
+
+            // run an infinite loop that parses incoming messages until the connection closes
 
         } catch(Exception e) {
             e.printStackTrace();
