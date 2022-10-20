@@ -5,19 +5,19 @@ import java.util.*;
 
 import peer.PeerMetaData;
 
-public class PeerConfigParser {
+public final class PeerConfigParser {
 
-    private ArrayList<PeerMetaData> peers;
+    private static ArrayList<PeerMetaData> peers = new ArrayList<>();
 
-    public PeerConfigParser(){
-        peers = new ArrayList<>();
-    }
-
-    public ArrayList<PeerMetaData> getPeersMetaData(){
+    public static ArrayList<PeerMetaData> getPeersMetaData(){
         return peers;
     }
 
-    public void parse(String filename) {
+    public static void loadPeerMetaData(){
+        parse("cfg\\Common.cfg");
+    }
+
+    private static void parse(String filename) {
         try{
             //Scanner scanner = new Scanner(new File(filename));
             BufferedReader in = new BufferedReader(new FileReader(filename));
@@ -31,7 +31,7 @@ public class PeerConfigParser {
         }
     }
 
-    public PeerMetaData parseLine(String line){
+    private static PeerMetaData parseLine(String line){
         int peerID_;
         String hostname_;
         int listeningPort_;

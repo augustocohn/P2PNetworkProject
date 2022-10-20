@@ -54,9 +54,8 @@ public class peer {
         this.peerID = peerID;
 
         //TODO need to find a way to make this more efficient
-        PeerConfigParser parser = new PeerConfigParser();
-        parser.parse("cfg\\PeerInfo.cfg");
-        ArrayList<PeerMetaData> peerCfgInfo = parser.getPeersMetaData();
+        PeerConfigParser.loadPeerMetaData();
+        ArrayList<PeerMetaData> peerCfgInfo = PeerConfigParser.getPeersMetaData();
 
         this.can_close_connection = false;
 
@@ -75,15 +74,15 @@ public class peer {
 
     private int get_port_num_from_ID() {
         //TODO reduce this with updated config parser to one line of code
-        PeerConfigParser parser = new PeerConfigParser();
-        parser.parse("cfg\\PeerInfo.cfg");
-        ArrayList<PeerMetaData> peerCfgInfo = parser.getPeersMetaData();
+        PeerConfigParser.loadPeerMetaData();
+        ArrayList<PeerMetaData> peerCfgInfo = PeerConfigParser.getPeersMetaData();
 
         for(PeerMetaData peerMetaData : peerCfgInfo) {
             if(peerMetaData.getPeerID() == this.peerID) {
                 return peerMetaData.getListeningPort();
             }
         }
+        return -1;
     }
 
     public void run() {

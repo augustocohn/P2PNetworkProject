@@ -31,10 +31,9 @@ public class PeerConfigParserTest {
 
 
     public static void main(String[] args){
-        PeerConfigParser parser = new PeerConfigParser();
-        parser.parse("cfg\\PeerInfo.cfg");
+        PeerConfigParser.loadPeerMetaData();
 
-        boolean result = testPeersCreatedProperly(parser.getPeersMetaData());
+        boolean result = testPeersCreatedProperly(PeerConfigParser.getPeersMetaData());
 
         System.out.println(result);
     }
