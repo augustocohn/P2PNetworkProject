@@ -6,6 +6,7 @@ public interface GlobalConstants {
     public static final String HS_HEADER = "P2PFILESHARINGPROJ";
     public static final int HS_ZERO_BIT_LEN = 10;
     public static final int HS_PEER_ID_LEN = 4;
+    public static final int HS_MESSAGE_LEN = 32;
 
     //actual messages
     public static final int MESSAGE_LENGTH_LEN = 4;
