@@ -45,9 +45,8 @@ public class PeerProcess extends Thread {
         try {
             serverSocket = new ServerSocket(this.port_num);
 
-            PeerConfigParser parser = new PeerConfigParser();
-            parser.parse("cfg\\PeerInfo.cfg");
-            ArrayList<PeerMetaData> peerCfgInfo = parser.getPeersMetaData();
+            PeerConfigParser.loadPeerMetaData();
+            ArrayList<PeerMetaData> peerCfgInfo = PeerConfigParser.getPeersMetaData();
 
             int connection_count = 0;
 
