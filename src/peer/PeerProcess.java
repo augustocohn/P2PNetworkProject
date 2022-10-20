@@ -17,7 +17,7 @@ import java.net.ServerSocket;
 // peer to start running
 
 
-public class peerProcess extends Thread {
+public class PeerProcess extends Thread {
 
     private static final int listening_port = 8000;
 
@@ -32,7 +32,7 @@ public class peerProcess extends Thread {
     private final int port_num;
     private final int peer_id;
 
-    public peerProcess(int port_num, int peer_id) {
+    public PeerProcess(int port_num, int peer_id) {
 
         this.port_num = port_num;
         this.peer_id = peer_id;
@@ -53,6 +53,8 @@ public class peerProcess extends Thread {
             while(connection_count != peerCfgInfo.size()) {
 
                 // wait for (k - 1) incoming connections
+                // call incoming stream object and wait and listen infinitely for each thread
+                // (these called threads will run and continuously listen for and parse incoming messages until all connections close)
 
 
                 connection_count++;
@@ -65,6 +67,7 @@ public class peerProcess extends Thread {
 
 
 
+        // might just need to delete the bookie boy stuff that follows in here
 
         try {
             out = new ObjectOutputStream(connection.getOutputStream());
