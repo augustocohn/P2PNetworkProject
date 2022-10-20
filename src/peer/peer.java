@@ -45,9 +45,8 @@ public class peer {
         this.peerID = peerID;
 
         //TODO need to find a way to make this more efficient
-        PeerConfigParser parser = new PeerConfigParser();
-        parser.parse("cfg\\PeerInfo.cfg");
-        ArrayList<PeerMetaData> peerCfgInfo = parser.getPeersMetaData();
+        PeerConfigParser.loadPeerMetaData();
+        ArrayList<PeerMetaData> peerCfgInfo = PeerConfigParser.getPeersMetaData();
 
 
     }
