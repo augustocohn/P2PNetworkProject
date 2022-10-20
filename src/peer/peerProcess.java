@@ -54,6 +54,7 @@ public class peerProcess extends Thread {
             while(connection_count != peerCfgInfo.size()) {
 
                 // wait for (k - 1) incoming connections
+                // call incoming stream object and wait and listen
 
 
                 connection_count++;
