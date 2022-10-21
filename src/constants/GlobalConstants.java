@@ -1,4 +1,4 @@
-package peer;
+package constants;
 
 public interface GlobalConstants {
     

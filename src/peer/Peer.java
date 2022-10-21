@@ -1,5 +1,6 @@
 package peer;
 
+import com.sun.javaws.IconUtil;
 import parsers.PeerConfigParser;
 
 import java.util.ArrayList;
@@ -7,7 +8,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.PriorityQueue;
 
-public class peer {
+public class Peer {
 
     // current peer's ID number
     private int peerID;
@@ -21,7 +22,7 @@ public class peer {
     // add new when new connection made
     // update whenever a "have" message is received
     // key is peerID, value is that neighbors bitField
-    private HashMap<Integer ,byte[]> neighbor_bitFields;
+    private HashMap<Integer, byte[]> neighbor_bitFields;
 
     // add to when requested a piece
     // check if present when requesting to not re-request
@@ -49,8 +50,11 @@ public class peer {
     // this is the process that waits and listens for all incoming messages and such
     private PeerProcess peer_process;
 
+    // not sure if the arraylist of outgoing connections is needed
+    private ArrayList<OutgoingConnection> outgoingConnections = new ArrayList<>();
 
-    public peer(int peerID) {
+
+    public Peer(int peerID) {
         this.peerID = peerID;
 
         //TODO need to find a way to make this more efficient
@@ -71,6 +75,7 @@ public class peer {
     private void start_peer_process() {
         this.port_num = get_port_num_from_ID();
         this.peer_process = new PeerProcess(this.port_num, this.peerID);
+        this.peer_process.start();
     }
 
     private int get_port_num_from_ID() {
@@ -84,6 +89,30 @@ public class peer {
                 return peerMetaData.getListeningPort();
             }
         }
+        System.out.println("Invalid peer ID in peer object");
+        return -1;
+    }
+
+    // for already created and established peerProcesses, connect to them (if bidirectional initiated connections are needed, then change this functionality)
+    private void send_valid_outgoing_connections() {
+
+        //TODO reduce this with updated config parser to one line of code
+        PeerConfigParser parser = new PeerConfigParser();
+        parser.parse("cfg\\PeerInfo.cfg");
+        ArrayList<PeerMetaData> peerCfgInfo = parser.getPeersMetaData();
+
+        for(PeerMetaData peerMetaData : peerCfgInfo) {
+            if(peerMetaData.getPeerID() == this.peerID) {
+                break;
+            }
+            OutgoingConnection outgoingConnection = new OutgoingConnection(this.peerID,
+                    peerMetaData.getPeerID(), peerMetaData.getHostname(), peerMetaData.getListeningPort());
+            outgoingConnections.add(outgoingConnection);
+            outgoingConnection.start();
+
+        }
+
+
     }
 
     public void run() {
@@ -92,7 +121,7 @@ public class peer {
         start_peer_process();
 
         // send all outgoing connections
-
+        send_valid_outgoing_connections();
 
 
     }
