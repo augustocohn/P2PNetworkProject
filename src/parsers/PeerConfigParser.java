@@ -14,7 +14,7 @@ public final class PeerConfigParser {
     }
 
     public static void loadPeerMetaData(){
-        parse("cfg\\Common.cfg");
+        parse("cfg\\PeerInfo.cfg");
     }
 
     private static void parse(String filename) {
