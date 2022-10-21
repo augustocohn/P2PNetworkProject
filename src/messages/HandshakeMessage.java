@@ -1,6 +1,6 @@
-package message;
+package messages;
 
-import peer.GlobalConstants;
+import constants.GlobalConstants; // might move this to an enumeration in the messages class
 
 import java.util.*;
 import java.nio.ByteBuffer;

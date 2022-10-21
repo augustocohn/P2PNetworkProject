@@ -40,6 +40,9 @@ public class OutgoingConnection extends Thread {
         // send bit field message stuff
 
         // while connection is open, do some periodic messaging
+        while(!Peer.get_can_close_connection()) {
+            //do periodic communcications
+        }
 
         // once connection is allowed to be closed (boolean will break while loop above), close the outgoing connections
 
