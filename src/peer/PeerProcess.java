@@ -45,18 +45,12 @@ public class PeerProcess extends Thread {
         try {
             serverSocket = new ServerSocket(this.port_num);
 
-            PeerConfigParser.loadPeerMetaData();
-            ArrayList<PeerMetaData> peerCfgInfo = PeerConfigParser.getPeersMetaData();
-
             int connection_count = 0;
+            Socket acceptedConnection = null;
 
-            while(connection_count != peerCfgInfo.size()) {
-
-                // wait for (k - 1) incoming connections
-                // call incoming stream object and wait and listen infinitely for each thread
-                // (these called threads will run and continuously listen for and parse incoming messages until all connections close)
-
-
+            while(connection_count != PeerConfigParser.getPeersMetaData().size()) {
+                acceptedConnection = serverSocket.accept();
+                System.out.println("Peer: " + this.peer_id + " | Client connected: " + acceptedConnection);
                 connection_count++;
             }
 
@@ -68,7 +62,7 @@ public class PeerProcess extends Thread {
 
 
         // might just need to delete the bookie boy stuff that follows in here
-
+        /*
         try {
             out = new ObjectOutputStream(connection.getOutputStream());
             out.flush();
@@ -100,6 +94,7 @@ public class PeerProcess extends Thread {
                 System.out.println("Disconnect with Client " + clientID);
             }
         }
+         */
     }
 
 

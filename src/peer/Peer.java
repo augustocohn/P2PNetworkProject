@@ -1,12 +1,8 @@
 package peer;
 
-import com.sun.javaws.IconUtil;
 import parsers.PeerConfigParser;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.PriorityQueue;
+import java.util.*;
 
 public class Peer {
 
@@ -57,11 +53,7 @@ public class Peer {
     public Peer(int peerID) {
         this.peerID = peerID;
 
-        //TODO move the initial read-in of the peer meta data to the startup file - removes potential cold start issue?
-        // was created but leave here for testing purposes
-        PeerConfigParser.loadPeerMetaData();
-        ArrayList<PeerMetaData> peerCfgInfo = PeerConfigParser.getPeersMetaData();
-
+        this.run();
 
         // missing something here, maybe bit field stuff from config file?
         // assign initial bit field depending on the value of has file in the meta data for the particular peer
@@ -94,10 +86,8 @@ public class Peer {
     // for already created and established peerProcesses, connect to them (if bidirectional initiated connections are needed, then change this functionality)
     private void send_valid_outgoing_connections() {
 
-        ArrayList<PeerMetaData> peerCfgInfo = PeerConfigParser.getPeersMetaData();
-
         //TODO figure out if this requires bidirectional connections or if only one connection in either direction is needed
-        for (PeerMetaData peerMetaData : peerCfgInfo) {
+        for (PeerMetaData peerMetaData : PeerConfigParser.getPeersMetaData()) {
             if (peerMetaData.getPeerID() == this.peerID) {
                 break;
             }
