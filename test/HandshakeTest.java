@@ -1,5 +1,5 @@
-import message.HandshakeMessage;
-import peer.GlobalConstants;
+import messages.HandshakeMessage;
+import constants.GlobalConstants;
 
 import java.nio.ByteBuffer;
 
