@@ -4,6 +4,7 @@ public interface GlobalConstants {
     
     //handshake message
     public static final String HS_HEADER = "P2PFILESHARINGPROJ";
+    public static final int HS_HEADER_LEN = 18;
     public static final int HS_ZERO_BIT_LEN = 10;
     public static final int HS_PEER_ID_LEN = 4;
     public static final int HS_MESSAGE_LEN = 32;
