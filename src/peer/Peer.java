@@ -89,7 +89,7 @@ public class Peer {
         //TODO figure out if this requires bidirectional connections or if only one connection in either direction is needed
         for (PeerMetaData peerMetaData : PeerConfigParser.getPeersMetaData()) {
             if (peerMetaData.getPeerID() == this.peerID) {
-                break;
+                continue;
             }
             OutgoingConnection outgoingConnection = new OutgoingConnection(this.peerID,
                     peerMetaData.getPeerID(), peerMetaData.getHostname(), peerMetaData.getListeningPort());
