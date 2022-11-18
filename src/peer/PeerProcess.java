@@ -57,8 +57,9 @@ public class PeerProcess extends Thread {
 
 
             while(connection_count < PeerConfigParser.getPeersMetaData().size()-1) {
-                acceptedConnection = serverSocket.accept();
+                IncomingConnection incoming = new IncomingConnection(peer_id, serverSocket.accept());
                 //System.out.println("Peer: " + this.peer_id + " | Client connected: " + acceptedConnection);
+                incoming.start();
                 connection_count++;
                 //System.out.println("Peer: " + this.peer_id + " | Has " + connection_count + " current connections");
             }

@@ -15,9 +15,8 @@ public class IncomingConnection extends Thread {
     private ObjectInputStream inputStream;
     private byte[] message;
 
-    public IncomingConnection(int peerID, int connectedPeerID, Socket portConnection) {
+    public IncomingConnection(int peerID, Socket portConnection) {
         this.peerID = peerID;
-        this.connectedPeerID = connectedPeerID;
         this.portConnection = portConnection;
     }
 
@@ -33,9 +32,9 @@ public class IncomingConnection extends Thread {
 
     }
 
-    private boolean verify_handshake(){
+    private int verifyHandshake(){
 
-        if(message.length != GlobalConstants.HS_MESSAGE_LEN) { return false; }
+        if(message.length != GlobalConstants.HS_MESSAGE_LEN) { return -1; }
 
         int curr = 0;
         byte[] header = Arrays.copyOfRange(message, curr, curr + GlobalConstants.HS_HEADER_LEN);
@@ -45,15 +44,10 @@ public class IncomingConnection extends Thread {
         ByteBuffer peer = ByteBuffer.wrap(Arrays.copyOfRange(message, curr, curr + GlobalConstants.HS_PEER_ID_LEN));
         byte[] check_zeros = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
-        //If header elements are valid, verify connected peer is the one received message from
         if(Arrays.equals(header, GlobalConstants.HS_HEADER.getBytes()) && Arrays.equals(zeros, check_zeros)) {
-            if(peer.getInt() == connectedPeerID){
-                return true;
-            }
+            return peer.getInt();
         }
-
-        return false;
-
+        return -1;
     }
 
 
@@ -64,7 +58,8 @@ public class IncomingConnection extends Thread {
 
             // handshake stuff
             receive_message();
-            if(!verify_handshake()) { throw new Exception("Invalid handshake message received"); }
+            this.connectedPeerID = verifyHandshake();
+            if(connectedPeerID == -1) { throw new Exception("Invalid handshake message received"); }
 
             // run an infinite loop that parses incoming messages until the connection closes
             /*

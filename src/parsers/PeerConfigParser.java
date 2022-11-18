@@ -13,6 +13,10 @@ public final class PeerConfigParser {
         return peers;
     }
 
+    public static int getPeersMetaDataSize(){
+        return peers.size();
+    }
+
     public static void loadPeerMetaData(){
         parse("cfg\\PeerInfo.cfg");
     }

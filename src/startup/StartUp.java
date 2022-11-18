@@ -25,6 +25,7 @@ public class StartUp {
             System.out.println("Adding peer: " + pmd.getPeerID());
             Peer p = new Peer(pmd.getPeerID());
         }
+
     }
 
 }
