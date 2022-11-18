@@ -9,9 +9,9 @@ import constants.GlobalConstants;
 
 public class IncomingConnection extends Thread {
 
-    private int peerID;
+    private final int peerID;
     private int connectedPeerID;
-    private Socket portConnection;
+    private final Socket portConnection;
     private ObjectInputStream inputStream;
     private byte[] message;
 
@@ -38,9 +38,9 @@ public class IncomingConnection extends Thread {
 
         int curr = 0;
         byte[] header = Arrays.copyOfRange(message, curr, curr + GlobalConstants.HS_HEADER_LEN);
-        curr = GlobalConstants.HS_HEADER_LEN;
+        curr += GlobalConstants.HS_HEADER_LEN;
         byte[] zeros = Arrays.copyOfRange(message, curr, curr + GlobalConstants.HS_ZERO_BIT_LEN);
-        curr = GlobalConstants.HS_ZERO_BIT_LEN;
+        curr += GlobalConstants.HS_ZERO_BIT_LEN;
         ByteBuffer peer = ByteBuffer.wrap(Arrays.copyOfRange(message, curr, curr + GlobalConstants.HS_PEER_ID_LEN));
         byte[] check_zeros = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
@@ -59,6 +59,7 @@ public class IncomingConnection extends Thread {
             // handshake stuff
             receive_message();
             this.connectedPeerID = verifyHandshake();
+            System.out.println(peerID + " received handshake from " + connectedPeerID);
             if(connectedPeerID == -1) { throw new Exception("Invalid handshake message received"); }
 
             // run an infinite loop that parses incoming messages until the connection closes
