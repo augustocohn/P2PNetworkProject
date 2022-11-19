@@ -37,6 +37,9 @@ public class PeerProcess extends Thread {
 
     }
 
+    public void listenAndParseMessage() {
+
+    }
 
     public void run() {
 
@@ -67,9 +70,17 @@ public class PeerProcess extends Thread {
             System.out.println(this.peer_id + " has connected to all peers");
 
 
+//            while(!Peer.get_can_close_connection()) {
+//                // process the messages incoming - or do something to keep thread alive, or do we have to, I actually don't think we want this
+//                // we actually may want the thread to close so that the rest of the run() method in Peer runs (I think this is the case)
+//
+//            }
+
+
         } catch(Exception e) {
             e.printStackTrace();
         }
+        System.out.println("Server thread " + this.peer_id + " has ended");
     }
 }
 

@@ -1,5 +1,7 @@
 package peer;
 
+import constants.CommonMetaData;
+import parsers.CommonConfigParser;
 import parsers.PeerConfigParser;
 
 import java.util.*;
@@ -12,8 +14,11 @@ public class Peer {
     // current peer's port number
     private int port_num;
 
+    // should we have a static hashmap of ID's to servers so a getinstance method by ID will allow for the returning of the correct thread/object
+    private static HashMap<Integer, Peer> peers = new HashMap<>();
+
     // this peer's current pieces (tracks what it has and what is needed)
-    private byte[] bitField; //TODO must be initialized with proper size in constructor
+    private byte[] bitField; //TODO figure out if last piece actually needs trailing zeros or not
 
     // add new when new connection made
     // update whenever a "have" message is received
@@ -25,6 +30,9 @@ public class Peer {
     // remove if choked by a requester
     // key is piece index, value is peerID
     private HashMap<Integer, Integer> requested_pieces = new HashMap<>();
+
+    // update on given interval
+    private HashSet<Integer> chokedby = new HashSet<>();
 
     // update on given interval
     private HashSet<Integer> unchoked_neighbors = new HashSet<>();
@@ -46,22 +54,55 @@ public class Peer {
     // this is the process that waits and listens for all incoming messages and such
     private PeerProcess peer_process;
 
-    // not sure if the arraylist of outgoing connections is needed
+    // not sure if the arraylist of outgoing connections is needed - should be that way can be accessed easily in message actions and responses
     private ArrayList<OutgoingConnection> outgoingConnections = new ArrayList<>();
 
+    void initializeFileToOnes(byte[] bits, int fileLength) {
+        //TODO figure out how to add ones only to the values that need it
+        // because there could be trailing zeros if the divisor of piecesize into filesize isn't exact
+
+        // TODO we may not need this distinction of trailing zeros in the last piece depending on implementation
+    }
 
     public Peer(int peerID) {
         this.peerID = peerID;
+        peers.put(peerID, this);
+
+        int pieceSize = CommonConfigParser.get_common_meta_data().get_piece_size();
+        int fileSize = CommonConfigParser.get_common_meta_data().get_file_size();
+
+        ArrayList<PeerMetaData> peesrMetaData = PeerConfigParser.getPeersMetaData();
+
+        boolean hasFile = false;
+        for(PeerMetaData peerMetaData : peesrMetaData) {
+            if(peerMetaData.getPeerID() == peerID) {
+                hasFile = peerMetaData.hasFile(); // will turn it true only if the peer has the file to start with
+            }
+        }
+
+        if(fileSize % pieceSize != 0) {
+            int temp = (fileSize / pieceSize) + 1;
+            this.bitField = new byte[temp];
+        } else {
+            int temp = (fileSize / pieceSize);
+            this.bitField = new byte[temp];
+        }
+
+        if(hasFile) {
+            initializeFileToOnes(this.bitField, fileSize);
+        }
 
         this.run();
 
-        // missing something here, maybe bit field stuff from config file?
-        // assign initial bit field depending on the value of has file in the meta data for the particular peer
-
-        // TODO need to initialize bitfield (and maybe neighbor bitfields too) here (create and call a method)
     }
 
-    static boolean get_can_close_connection() {
+    // this is the method that exposes our Peer's to be called when methods need to be called for when messages are processed and state of
+    //-values need to be updated (respective methods will be called)
+    synchronized public static Peer getPeerByID(int ID) {
+        return peers.get(ID);
+    }
+
+     synchronized public static boolean get_can_close_connection() {
         return Peer.can_close_connection;
     }
 
@@ -83,10 +124,33 @@ public class Peer {
         return -1;
     }
 
+    public void addToChokedBy(int connectedPeerID) {
+        this.chokedby.add(connectedPeerID);
+    }
+
+    public void removeFromChokedBy(int connectedPeerID) {
+        this.chokedby.remove(connectedPeerID);
+    }
+
+    public void addToChokedNeighbors(int peerID) {
+        this.choked_neighbors.add(peerID);
+        this.unchoked_neighbors.remove(peerID);
+    }
+
+    public void addToUnchokedNeighbors(int peerID) {
+        this.unchoked_neighbors.add(peerID);
+        this.choked_neighbors.remove(peerID);
+    }
+
+    // this needs to be synchronized so that multiple threads don't access it at a time and thus they won't have inconcurrent values
+    synchronized public PriorityQueue<Integer> getInterestedNeighbors() {
+        return this.interested_neighbors;
+    }
+
     // for already created and established peerProcesses, connect to them (if bidirectional initiated connections are needed, then change this functionality)
     private void send_valid_outgoing_connections() {
 
-        //TODO figure out if this requires bidirectional connections or if only one connection in either direction is needed
+        // bidirectional connections are needed and that is thus how the following loop is defined
         for (PeerMetaData peerMetaData : PeerConfigParser.getPeersMetaData()) {
             if (peerMetaData.getPeerID() == this.peerID) {
                 continue;
@@ -99,11 +163,7 @@ public class Peer {
         }
     }
 
-
-
     public void run() {
-
-
 
         // start peerProcess
         start_peer_process();
@@ -111,8 +171,39 @@ public class Peer {
         // send all outgoing connections
         send_valid_outgoing_connections();
 
+        // updates preferred neighbors
+        Timer timer1 = new Timer();
+        timer1.schedule(new UpdatePreferredNeighbors(), 0, CommonConfigParser.get_common_meta_data().get_unchoking_interval()*1000);
+
+        // updates optimistically unchoked neighbor
+        Timer timer2 = new Timer();
+        timer2.schedule(new UpdateOptimisticallyUnchokedNeighbor(), 0, CommonConfigParser.get_common_meta_data().get_optim_unchoking_interval()*1000);
+
+        System.out.println("Client thread " + this.peerID + " has ended");
 
     }
 
+    // to create functionality here, need to find out how to calculate the download rate for each neighbor
+    class UpdatePreferredNeighbors extends TimerTask {
+        public void run() { // this may need to be synchronized but I don't think it does
+            System.out.println("preferred neighbors updated for peer " + peerID);
+
+            //TODO need functionality to calculate download rate for a given interval to thus update preferred neighbors accordingly
+            // priority queue that can somehow track the download rate as priority and the IDs as values
+
+        }
+
+    }
+
+    class UpdateOptimisticallyUnchokedNeighbor extends TimerTask {
+        public void run() { // this may need to be synchronized but I don't think it does
+            System.out.println("optimistically unchoked neighbor updated for peer " + peerID);
+
+            //TODO remember, this optimistically unchoked neighbor should only exist if: (# of interested neighbors > k) o.w. it should be null
+
+        }
+    }
 
 }
+
+

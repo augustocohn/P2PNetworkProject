@@ -12,7 +12,6 @@ import java.util.Arrays;
 
 public class OutgoingConnection extends Thread {
 
-
     private int peerID;
     private int destinationPeerID;
     private String destinationHost;
@@ -91,6 +90,7 @@ public class OutgoingConnection extends Thread {
 
         // once connection is allowed to be closed (boolean will break while loop above), close the outgoing connections
 
+        System.out.println("Outgoing connection thread for " + this.peerID + " has ended");
     }
 
 }
