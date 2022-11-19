@@ -57,6 +57,9 @@ public class Peer {
     // not sure if the arraylist of outgoing connections is needed - should be that way can be accessed easily in message actions and responses
     private ArrayList<OutgoingConnection> outgoingConnections = new ArrayList<>();
 
+    // random generator (variable so "randomness" is not reset)
+    Random random = new Random();
+
     void initializeFileToOnes(byte[] bits, int fileLength) {
         //TODO figure out how to add ones only to the values that need it
         // because there could be trailing zeros if the divisor of piecesize into filesize isn't exact
@@ -183,13 +186,21 @@ public class Peer {
 
     }
 
+    synchronized public void recalculateInterestedNeighbors() { // synchronized so that it doesn't cause inconcurrenices
+        //TODO
+        // deconstructs priority queue (or destroys it, whatever)
+        // reconstructs it using calculations via values from previous interval (make sure this calls get interested neighbors bc synchronous)
+    }
+
     // to create functionality here, need to find out how to calculate the download rate for each neighbor
     class UpdatePreferredNeighbors extends TimerTask {
         public void run() { // this may need to be synchronized but I don't think it does
             System.out.println("preferred neighbors updated for peer " + peerID);
 
-            //TODO need functionality to calculate download rate for a given interval to thus update preferred neighbors accordingly
+            //TODO need functionality to calculate download rate for a given interval to thus update interested neighbors accordingly
             // priority queue that can somehow track the download rate as priority and the IDs as values
+
+            recalculateInterestedNeighbors(); //gotta implement this method to recalculate interested neighbors
 
         }
 
@@ -200,6 +211,24 @@ public class Peer {
             System.out.println("optimistically unchoked neighbor updated for peer " + peerID);
 
             //TODO remember, this optimistically unchoked neighbor should only exist if: (# of interested neighbors > k) o.w. it should be null
+
+            PriorityQueue<Integer> interested_neighbors_copy = new PriorityQueue<>(getInterestedNeighbors());
+
+            int K = CommonConfigParser.get_common_meta_data().get_num_of_pref_neighbors();
+
+            for(int count = 0; count < K; count++) {
+                // conditional for if we have fewer interested neighbors than we do preferred neighbors allowed
+                if(interested_neighbors_copy.isEmpty()) {
+                    optimistically_unchoked = null;
+                    return;
+                }
+                interested_neighbors_copy.poll();
+
+            }
+
+            // randomly select a value from the priority queue (can't one liner this bc size needs to be extracted)
+            ArrayList<Integer> interested_neighbors_list = new ArrayList<>(interested_neighbors_copy);
+            optimistically_unchoked = interested_neighbors_list.get(random.nextInt(interested_neighbors_list.size()));
 
         }
     }
