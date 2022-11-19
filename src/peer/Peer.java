@@ -176,11 +176,19 @@ public class Peer {
 
         // updates preferred neighbors
         Timer timer1 = new Timer();
-        timer1.schedule(new UpdatePreferredNeighbors(), 0, CommonConfigParser.get_common_meta_data().get_unchoking_interval()*1000);
+        UpdatePreferredNeighbors updatePreferredNeighbors = new UpdatePreferredNeighbors();
+        timer1.schedule(updatePreferredNeighbors, 0, CommonConfigParser.get_common_meta_data().get_unchoking_interval()*1000);
 
         // updates optimistically unchoked neighbor
         Timer timer2 = new Timer();
-        timer2.schedule(new UpdateOptimisticallyUnchokedNeighbor(), 0, CommonConfigParser.get_common_meta_data().get_optim_unchoking_interval()*1000);
+        UpdateOptimisticallyUnchokedNeighbor updateOptimisticallyUnchokedNeighbor = new UpdateOptimisticallyUnchokedNeighbor();
+        timer2.schedule(updateOptimisticallyUnchokedNeighbor, 0, CommonConfigParser.get_common_meta_data().get_optim_unchoking_interval()*1000);
+
+
+        //TODO need an effective way to run these below based on the canCloseConnection boolean to kill the timer tasks
+        // UPDATE: may not need to ever kill these timer tasks since I believe that once all user threads terminate, so do the timer tasks
+//        updatePreferredNeighbors.cancel();
+//        updateOptimisticallyUnchokedNeighbor.cancel();
 
         System.out.println("Client thread " + this.peerID + " has ended");
 
@@ -212,23 +220,25 @@ public class Peer {
 
             //TODO remember, this optimistically unchoked neighbor should only exist if: (# of interested neighbors > k) o.w. it should be null
 
-            PriorityQueue<Integer> interested_neighbors_copy = new PriorityQueue<>(getInterestedNeighbors());
+            // TODO the following code will work once an initialization of the priority queue is correctly implemented
 
-            int K = CommonConfigParser.get_common_meta_data().get_num_of_pref_neighbors();
-
-            for(int count = 0; count < K; count++) {
-                // conditional for if we have fewer interested neighbors than we do preferred neighbors allowed
-                if(interested_neighbors_copy.isEmpty()) {
-                    optimistically_unchoked = null;
-                    return;
-                }
-                interested_neighbors_copy.poll();
-
-            }
-
-            // randomly select a value from the priority queue (can't one liner this bc size needs to be extracted)
-            ArrayList<Integer> interested_neighbors_list = new ArrayList<>(interested_neighbors_copy);
-            optimistically_unchoked = interested_neighbors_list.get(random.nextInt(interested_neighbors_list.size()));
+//            PriorityQueue<Integer> interested_neighbors_copy = new PriorityQueue<>(getInterestedNeighbors());
+//
+//            int K = CommonConfigParser.get_common_meta_data().get_num_of_pref_neighbors();
+//
+//            for(int count = 0; count < K; count++) {
+//                // conditional for if we have fewer interested neighbors than we do preferred neighbors allowed
+//                if(interested_neighbors_copy.isEmpty()) {
+//                    optimistically_unchoked = null;
+//                    return;
+//                }
+//                interested_neighbors_copy.poll();
+//
+//            }
+//
+//            // randomly select a value from the priority queue (can't one liner this bc size needs to be extracted)
+//            ArrayList<Integer> interested_neighbors_list = new ArrayList<>(interested_neighbors_copy);
+//            optimistically_unchoked = interested_neighbors_list.get(random.nextInt(interested_neighbors_list.size()));
 
         }
     }
