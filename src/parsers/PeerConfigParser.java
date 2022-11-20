@@ -17,6 +17,15 @@ public final class PeerConfigParser {
         return peers.size();
     }
 
+    public static PeerMetaData getPeerMetaData(int peerID) {
+        for(PeerMetaData pmd : peers){
+            if(pmd.getPeerID() == peerID){
+                return pmd;
+            }
+        }
+        return null;
+    }
+
     public static void loadPeerMetaData(){
         parse("cfg\\PeerInfo.cfg");
     }

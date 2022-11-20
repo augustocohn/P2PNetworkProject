@@ -1,6 +1,5 @@
 package peer;
 
-import constants.CommonMetaData;
 import parsers.CommonConfigParser;
 import parsers.PeerConfigParser;
 
@@ -18,7 +17,7 @@ public class Peer {
     private static HashMap<Integer, Peer> peers = new HashMap<>();
 
     // this peer's current pieces (tracks what it has and what is needed)
-    private byte[] bitField; //TODO figure out if last piece actually needs trailing zeros or not
+    private ArrayList<Boolean> bitField = new ArrayList<>(); //TODO figure out if last piece actually needs trailing zeros or not
 
     // add new when new connection made
     // update whenever a "have" message is received
@@ -60,43 +59,36 @@ public class Peer {
     // random generator (variable so "randomness" is not reset)
     Random random = new Random();
 
-    void initializeFileToOnes(byte[] bits, int fileLength) {
+    void initializeBitField(boolean hasFile, int pieces) {
         //TODO figure out how to add ones only to the values that need it
         // because there could be trailing zeros if the divisor of piecesize into filesize isn't exact
 
         // TODO we may not need this distinction of trailing zeros in the last piece depending on implementation
+        for(int i = 0; i < pieces; i++){
+            this.bitField.add(hasFile);
+        }
     }
 
     public Peer(int peerID) {
         this.peerID = peerID;
         peers.put(peerID, this);
 
-        int pieceSize = CommonConfigParser.get_common_meta_data().get_piece_size();
-        int fileSize = CommonConfigParser.get_common_meta_data().get_file_size();
+        int pieceSize = CommonConfigParser.getCommonMetaData().getPieceSize();
+        int fileSize = CommonConfigParser.getCommonMetaData().getFileSize();
+        boolean hasFile = PeerConfigParser.getPeerMetaData(peerID).hasFile();
 
-        ArrayList<PeerMetaData> peesrMetaData = PeerConfigParser.getPeersMetaData();
-
-        boolean hasFile = false;
-        for(PeerMetaData peerMetaData : peesrMetaData) {
-            if(peerMetaData.getPeerID() == peerID) {
-                hasFile = peerMetaData.hasFile(); // will turn it true only if the peer has the file to start with
-            }
-        }
-
-        if(fileSize % pieceSize != 0) {
-            int temp = (fileSize / pieceSize) + 1;
-            this.bitField = new byte[temp];
-        } else {
-            int temp = (fileSize / pieceSize);
-            this.bitField = new byte[temp];
-        }
-
-        if(hasFile) {
-            initializeFileToOnes(this.bitField, fileSize);
-        }
+        initializeBitField(hasFile, calculatePieces(fileSize, pieceSize));
 
         this.run();
 
+    }
+
+    private int calculatePieces(int fileSize, int pieceSize){
+        if(fileSize % pieceSize != 0){
+            return (fileSize / pieceSize) + 1;
+        } else {
+            return (fileSize / pieceSize);
+        }
     }
 
     // this is the method that exposes our Peer's to be called when methods need to be called for when messages are processed and state of
@@ -105,17 +97,17 @@ public class Peer {
         return peers.get(ID);
     }
 
-     synchronized public static boolean get_can_close_connection() {
+     synchronized public static boolean getCanCloseConnection() {
         return Peer.can_close_connection;
     }
 
-    private void start_peer_process() {
-        this.port_num = get_port_num_from_ID();
+    private void startPeerProcess() {
+        this.port_num = getPortNumFromID();
         this.peer_process = new PeerProcess(this.port_num, this.peerID);
         this.peer_process.start();
     }
 
-    private int get_port_num_from_ID() {
+    private int getPortNumFromID() {
         ArrayList<PeerMetaData> peerCfgInfo = PeerConfigParser.getPeersMetaData();
 
         for(PeerMetaData peerMetaData : peerCfgInfo) {
@@ -151,7 +143,7 @@ public class Peer {
     }
 
     // for already created and established peerProcesses, connect to them (if bidirectional initiated connections are needed, then change this functionality)
-    private void send_valid_outgoing_connections() {
+    private void sendValidOutgoingConnections() {
 
         // bidirectional connections are needed and that is thus how the following loop is defined
         for (PeerMetaData peerMetaData : PeerConfigParser.getPeersMetaData()) {
@@ -169,20 +161,20 @@ public class Peer {
     public void run() {
 
         // start peerProcess
-        start_peer_process();
+        startPeerProcess();
 
         // send all outgoing connections
-        send_valid_outgoing_connections();
+        sendValidOutgoingConnections();
 
         // updates preferred neighbors
         Timer timer1 = new Timer();
         UpdatePreferredNeighbors updatePreferredNeighbors = new UpdatePreferredNeighbors();
-        timer1.schedule(updatePreferredNeighbors, 0, CommonConfigParser.get_common_meta_data().get_unchoking_interval()*1000);
+        timer1.schedule(updatePreferredNeighbors, 0, CommonConfigParser.getCommonMetaData().getUnchokingInterval()*1000);
 
         // updates optimistically unchoked neighbor
         Timer timer2 = new Timer();
         UpdateOptimisticallyUnchokedNeighbor updateOptimisticallyUnchokedNeighbor = new UpdateOptimisticallyUnchokedNeighbor();
-        timer2.schedule(updateOptimisticallyUnchokedNeighbor, 0, CommonConfigParser.get_common_meta_data().get_optim_unchoking_interval()*1000);
+        timer2.schedule(updateOptimisticallyUnchokedNeighbor, 0, CommonConfigParser.getCommonMetaData().getOptimUnchokingInterval()*1000);
 
 
         //TODO need an effective way to run these below based on the canCloseConnection boolean to kill the timer tasks

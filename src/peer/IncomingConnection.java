@@ -76,7 +76,6 @@ public class IncomingConnection extends Thread {
 
         if(messageLength != 0) {
             payload = Arrays.copyOfRange(message, curr, curr + messageLength);
-            curr += messageLength;
         }
 
         Message message = new Message(messageType, messageLength, payload);
@@ -104,7 +103,7 @@ public class IncomingConnection extends Thread {
             // run an infinite loop that parses incoming messages until the connection closes
             while(portConnection.isConnected()) {
                 // call method - passes peer id as param and returns the boolean memb
-                if(Peer.get_can_close_connection()) {
+                if(Peer.getCanCloseConnection()) {
                     // SHUT EVERYTHING THE FUCK DOWN (close connection port)
                 }
 

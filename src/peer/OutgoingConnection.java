@@ -4,7 +4,6 @@ package peer;
 import messages.HandshakeMessage;
 
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.nio.ByteBuffer;
@@ -84,7 +83,7 @@ public class OutgoingConnection extends Thread {
         // send bit field message stuff
 
         // while connection is open, do some periodic messaging
-        while(!Peer.get_can_close_connection()) {
+        while(!Peer.getCanCloseConnection()) {
             //do periodic communcications
         }
 

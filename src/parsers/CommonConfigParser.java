@@ -7,7 +7,7 @@ import java.io.FileReader;
 
 public class CommonConfigParser {
 
-    public static CommonMetaData get_common_meta_data() {
+    public static CommonMetaData getCommonMetaData() {
         return CommonConfigParser.commonMetaData;
     }
 

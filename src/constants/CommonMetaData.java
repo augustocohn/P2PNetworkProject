@@ -25,27 +25,27 @@ public class CommonMetaData {
         this.piece_size = piece_size;
     }
 
-    public int get_num_of_pref_neighbors() {
+    public int getNumOfPrefNeighbors() {
         return this.num_of_pref_neighbors;
     }
 
-    public int get_unchoking_interval() {
+    public int getUnchokingInterval() {
         return this.unchoking_interval;
     }
 
-    public int get_optim_unchoking_interval() {
+    public int getOptimUnchokingInterval() {
         return this.optim_unchoking_interval;
     }
 
-    public String get_file_name() {
+    public String getFileName() {
         return this.file_name;
     }
 
-    public int get_file_size() {
+    public int getFileSize() {
         return this.file_size;
     }
 
-    public int get_piece_size() {
+    public int getPieceSize() {
         return this.piece_size;
     }
 

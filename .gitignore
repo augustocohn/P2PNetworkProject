@@ -1,5 +1,7 @@
 # Default ignored files
 .idea/
+cfg/
+*.cfg
 *.class
 *.xml
 *.iml

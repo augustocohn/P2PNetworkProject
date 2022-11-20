@@ -5,12 +5,12 @@ public class CommonConfigParserTest {
 
     public static boolean compare(CommonMetaData commonMetaData1, CommonMetaData commonMetaData2) {
 
-        return (commonMetaData1.get_num_of_pref_neighbors() == commonMetaData2.get_num_of_pref_neighbors() &&
-                commonMetaData1.get_unchoking_interval() == commonMetaData2.get_unchoking_interval() &&
-                commonMetaData1.get_optim_unchoking_interval() == commonMetaData2.get_optim_unchoking_interval() &&
-                commonMetaData1.get_file_name().equals(commonMetaData2.get_file_name()) &&
-                commonMetaData1.get_file_size() == commonMetaData2.get_file_size() &&
-                commonMetaData1.get_piece_size() == commonMetaData2.get_piece_size());
+        return (commonMetaData1.getNumOfPrefNeighbors() == commonMetaData2.getNumOfPrefNeighbors() &&
+                commonMetaData1.getUnchokingInterval() == commonMetaData2.getUnchokingInterval() &&
+                commonMetaData1.getOptimUnchokingInterval() == commonMetaData2.getOptimUnchokingInterval() &&
+                commonMetaData1.getFileName().equals(commonMetaData2.getFileName()) &&
+                commonMetaData1.getFileSize() == commonMetaData2.getFileSize() &&
+                commonMetaData1.getPieceSize() == commonMetaData2.getPieceSize());
 
     }
 
@@ -28,7 +28,7 @@ public class CommonConfigParserTest {
 
         CommonConfigParser.loadCommonMetaData();
 
-        boolean result = testCommonCreatedProperly(CommonConfigParser.get_common_meta_data());
+        boolean result = testCommonCreatedProperly(CommonConfigParser.getCommonMetaData());
 
         System.out.println(result);
     }
