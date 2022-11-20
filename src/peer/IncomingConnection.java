@@ -6,6 +6,8 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 
 import constants.GlobalConstants;
+import messages.Message;
+import parsers.MessageParser;
 
 public class IncomingConnection extends Thread {
 
@@ -20,21 +22,25 @@ public class IncomingConnection extends Thread {
         this.portConnection = portConnection;
     }
 
-    private void receive_message(){
-
+    // actually receives byte array from input port
+    private void receive_message() {
         try{
 
             message = (byte[])inputStream.readObject();
 
-        }catch(Exception e){
-            e.printStackTrace();
+        } catch(Exception e){
+//            e.printStackTrace();
+            message = GlobalConstants.MESSAGE_UNPROCESSED; // so that we don't reprocess messages
         }
 
     }
 
-    private int verifyHandshake(){
+    // verifies fields in the handshake message are as expected and returns the integer representation of the peer ID of incoming message
+    private int verifyHandshake(){ // TODO can make cleaner if one uses the HandshakeMessage class
 
-        if(message.length != GlobalConstants.HS_MESSAGE_LEN) { return -1; }
+        if(message == GlobalConstants.MESSAGE_UNPROCESSED || message.length != GlobalConstants.HS_MESSAGE_LEN) {
+            return -1;
+        }
 
         int curr = 0;
         byte[] header = Arrays.copyOfRange(message, curr, curr + GlobalConstants.HS_HEADER_LEN);
@@ -44,6 +50,7 @@ public class IncomingConnection extends Thread {
         ByteBuffer peer = ByteBuffer.wrap(Arrays.copyOfRange(message, curr, curr + GlobalConstants.HS_PEER_ID_LEN));
         byte[] check_zeros = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
+        // runs an equals to make sure the handshake header and zeros in the handshake are as expected
         if(Arrays.equals(header, GlobalConstants.HS_HEADER.getBytes()) && Arrays.equals(zeros, check_zeros)) {
             return peer.getInt();
         }
@@ -51,23 +58,69 @@ public class IncomingConnection extends Thread {
     }
 
 
+    private void processMessage() {
+
+        if(message == GlobalConstants.MESSAGE_UNPROCESSED) {
+            return;
+        }
+
+        int curr = 0;
+        byte[] length = Arrays.copyOfRange(message, curr, curr + GlobalConstants.MESSAGE_LENGTH_LEN);
+        curr += GlobalConstants.MESSAGE_LENGTH_LEN;
+        byte[] type = Arrays.copyOfRange(message, curr, curr + GlobalConstants.MESSAGE_TYPE_LEN);
+        curr += GlobalConstants.MESSAGE_TYPE_LEN;
+        byte[] payload = null;
+
+        int messageLength = ByteBuffer.wrap(length).getInt();
+        int messageType = ByteBuffer.wrap(type).getInt();
+
+        if(messageLength != 0) {
+            payload = Arrays.copyOfRange(message, curr, curr + messageLength);
+            curr += messageLength;
+        }
+
+        Message message = new Message(messageType, messageLength, payload);
+
+        MessageParser.ParseMessage(message, peerID, connectedPeerID);
+
+    }
+
     public void run() {
 
         try {
             inputStream = new ObjectInputStream(portConnection.getInputStream());
 
             // handshake stuff
+//            while(message != GlobalConstants.MESSAGE_UNPROCESSED) { // need to loop and keep trying until the message is processed
+//                receive_message();
+//            }
             receive_message();
             this.connectedPeerID = verifyHandshake();
             System.out.println(peerID + " received handshake from " + connectedPeerID);
             if(connectedPeerID == -1) { throw new Exception("Invalid handshake message received"); }
 
+            // bitfield message processing
+
             // run an infinite loop that parses incoming messages until the connection closes
-            /*
-            while(portConnection.isConnected()){
+            while(portConnection.isConnected()) {
+                // call method - passes peer id as param and returns the boolean memb
+                if(Peer.get_can_close_connection()) {
+                    // SHUT EVERYTHING THE FUCK DOWN (close connection port)
+                }
+
+                receive_message();
+
+                // need to have functionality so that a previous message isn't processed (or would that make a difference?)
+                // I think it would, so in the receive_message() function, I am going to introduce functionality to set message to a NOT_PROCESSED
+                if (message == GlobalConstants.MESSAGE_UNPROCESSED) {
+                    continue;
+                }
+
+                processMessage(); // sends message type, length, and payload along with the peerID of the
 
             }
-             */
+
+            System.out.println("Incoming connection thread for " + this.peerID + " has ended");
 
         } catch(Exception e) {
             e.printStackTrace();

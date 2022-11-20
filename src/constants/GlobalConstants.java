@@ -1,6 +1,8 @@
 package constants;
 
 public interface GlobalConstants {
+
+    public static final byte[] MESSAGE_UNPROCESSED = null;
     
     //handshake message
     public static final String HS_HEADER = "P2PFILESHARINGPROJ";
