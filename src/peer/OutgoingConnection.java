@@ -1,7 +1,10 @@
 package peer;
 
 
+import constants.GlobalConstants;
 import messages.HandshakeMessage;
+import messages.Message;
+import parsers.PeerConfigParser;
 
 import java.io.IOException;
 import java.io.ObjectOutputStream;
@@ -42,21 +45,25 @@ public class OutgoingConnection extends Thread {
             out.writeObject(msg);
             out.flush();
 
-            //Converts byte array to int for interpretation
-            ByteBuffer pID_buff = ByteBuffer.wrap(Arrays.copyOfRange(msg, 28, 32));
-            int pID = pID_buff.getInt();
+            if(msg[0] == 'P') {
+                //Converts byte array to int for interpretation
+                ByteBuffer pID_buff = ByteBuffer.wrap(Arrays.copyOfRange(msg, 28, 32));
+                int pID = pID_buff.getInt();
 
-            String str_msg = new String(Arrays.copyOfRange(msg, 0, 28));
-            System.out.println("Peer: " + this.peerID + " sent message: " + str_msg + pID + " to Client " + destinationPeerID);
+                String str_msg = new String(Arrays.copyOfRange(msg, 0, 28));
+                System.out.println("Peer: " + this.peerID + " sent message: " + str_msg + pID + " to Client " + destinationPeerID);
+            } else {
+                System.out.println("Peer: " + this.peerID + " sent message type: " + (int)msg[4] + " to Client " + destinationPeerID);
+            }
         }
         catch(IOException ioException){
             ioException.printStackTrace();
         }
     }
 
-
     public void run() {
 
+        Peer peer = Peer.getPeerByID(peerID);
         // get that connection
         while(true) {
 
@@ -69,11 +76,18 @@ public class OutgoingConnection extends Thread {
             }
         }
 
-        // handshake stuff
         try{
 
+            // handshake stuff
             HandshakeMessage hsm = new HandshakeMessage(this.peerID);
             sendMessage(hsm.getByteMessage());
+
+            //bitfield stuff
+            if(PeerConfigParser.getPeerMetaData(peerID).hasFile()) {
+                Message mes = new Message(GlobalConstants.MSG_TYPE_BITFIELD, peer.getLocalBitField().length, peer.getLocalBitField());
+                sendMessage(mes.getByteMessage());
+            }
+
 
         } catch(Exception e){
             e.printStackTrace();

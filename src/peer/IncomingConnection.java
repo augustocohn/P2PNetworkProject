@@ -23,7 +23,7 @@ public class IncomingConnection extends Thread {
     }
 
     // actually receives byte array from input port
-    private void receive_message() {
+    private void receiveMessage() {
         try{
 
             message = (byte[])inputStream.readObject();
@@ -64,41 +64,51 @@ public class IncomingConnection extends Thread {
             return;
         }
 
+
+        if(peerID == 1002){
+            int x = 0; //PLACE BREAKPOINT ON THIS LINE IF WANTING TO DEBUG ON SPECIFIC THREAD
+        }
+
         int curr = 0;
         byte[] length = Arrays.copyOfRange(message, curr, curr + GlobalConstants.MESSAGE_LENGTH_LEN);
         curr += GlobalConstants.MESSAGE_LENGTH_LEN;
-        byte[] type = Arrays.copyOfRange(message, curr, curr + GlobalConstants.MESSAGE_TYPE_LEN);
+        int type = message[curr];
         curr += GlobalConstants.MESSAGE_TYPE_LEN;
         byte[] payload = null;
 
         int messageLength = ByteBuffer.wrap(length).getInt();
-        int messageType = ByteBuffer.wrap(type).getInt();
 
         if(messageLength != 0) {
             payload = Arrays.copyOfRange(message, curr, curr + messageLength);
         }
 
-        Message message = new Message(messageType, messageLength, payload);
+        Message message = new Message(type, messageLength, payload);
+
+        System.out.println("Peer " + peerID + " received message of type " + type + " from " + connectedPeerID);
 
         MessageParser.ParseMessage(message, peerID, connectedPeerID);
 
     }
 
+    private void clearMessage(){
+        message = GlobalConstants.MESSAGE_UNPROCESSED;
+    }
+
     public void run() {
 
         try {
+
             inputStream = new ObjectInputStream(portConnection.getInputStream());
 
             // handshake stuff
 //            while(message != GlobalConstants.MESSAGE_UNPROCESSED) { // need to loop and keep trying until the message is processed
 //                receive_message();
 //            }
-            receive_message();
+            receiveMessage();
             this.connectedPeerID = verifyHandshake();
             System.out.println(peerID + " received handshake from " + connectedPeerID);
             if(connectedPeerID == -1) { throw new Exception("Invalid handshake message received"); }
 
-            // bitfield message processing
 
             // run an infinite loop that parses incoming messages until the connection closes
             while(portConnection.isConnected()) {
@@ -107,7 +117,7 @@ public class IncomingConnection extends Thread {
                     // SHUT EVERYTHING THE FUCK DOWN (close connection port)
                 }
 
-                receive_message();
+                receiveMessage();
 
                 // need to have functionality so that a previous message isn't processed (or would that make a difference?)
                 // I think it would, so in the receive_message() function, I am going to introduce functionality to set message to a NOT_PROCESSED

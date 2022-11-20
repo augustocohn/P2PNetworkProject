@@ -17,7 +17,7 @@ public class Peer {
     private static HashMap<Integer, Peer> peers = new HashMap<>();
 
     // this peer's current pieces (tracks what it has and what is needed)
-    private ArrayList<Boolean> bitField = new ArrayList<>(); //TODO figure out if last piece actually needs trailing zeros or not
+    private byte[] bitField; //TODO figure out if last piece actually needs trailing zeros or not
 
     // add new when new connection made
     // update whenever a "have" message is received
@@ -59,13 +59,19 @@ public class Peer {
     // random generator (variable so "randomness" is not reset)
     Random random = new Random();
 
+    public byte[] getLocalBitField(){
+        return bitField;
+    }
+
     void initializeBitField(boolean hasFile, int pieces) {
         //TODO figure out how to add ones only to the values that need it
         // because there could be trailing zeros if the divisor of piecesize into filesize isn't exact
 
         // TODO we may not need this distinction of trailing zeros in the last piece depending on implementation
-        for(int i = 0; i < pieces; i++){
-            this.bitField.add(hasFile);
+        int byteAmount = pieces%8 == 0 ? pieces/8 : pieces/8+1;
+        this.bitField = new byte[byteAmount];
+        for(int i = 0; i < byteAmount; i++){
+            this.bitField[i] = hasFile ? (byte)0b11111111 : (byte)0b00000000;
         }
     }
 
@@ -195,7 +201,7 @@ public class Peer {
     // to create functionality here, need to find out how to calculate the download rate for each neighbor
     class UpdatePreferredNeighbors extends TimerTask {
         public void run() { // this may need to be synchronized but I don't think it does
-            System.out.println("preferred neighbors updated for peer " + peerID);
+            //System.out.println("preferred neighbors updated for peer " + peerID);
 
             //TODO need functionality to calculate download rate for a given interval to thus update interested neighbors accordingly
             // priority queue that can somehow track the download rate as priority and the IDs as values
@@ -208,7 +214,7 @@ public class Peer {
 
     class UpdateOptimisticallyUnchokedNeighbor extends TimerTask {
         public void run() { // this may need to be synchronized but I don't think it does
-            System.out.println("optimistically unchoked neighbor updated for peer " + peerID);
+            //System.out.println("optimistically unchoked neighbor updated for peer " + peerID);
 
             //TODO remember, this optimistically unchoked neighbor should only exist if: (# of interested neighbors > k) o.w. it should be null
 

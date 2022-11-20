@@ -16,13 +16,13 @@ public interface GlobalConstants {
     public static final int MESSAGE_TYPE_LEN = 1;
 
     //message types
-    public static final char MSG_TYPE_CHOKE = '0';
-    public static final char MSG_TYPE_UNCHOKE = '1';
-    public static final char MSG_TYPE_INTERESTED = '2';
-    public static final char MSG_TYPE_NOT_INTERESTED = '3';
-    public static final char MSG_TYPE_HAVE = '4';
-    public static final char MSG_TYPE_BITFIELD = '5';
-    public static final char MSG_TYPE_REQUEST = '6';
-    public static final char MSG_TYPE_PIECE = '7';
+    public static final byte MSG_TYPE_CHOKE = 0;
+    public static final byte MSG_TYPE_UNCHOKE = 1;
+    public static final byte MSG_TYPE_INTERESTED = 2;
+    public static final byte MSG_TYPE_NOT_INTERESTED = 3;
+    public static final byte MSG_TYPE_HAVE = 4;
+    public static final byte MSG_TYPE_BITFIELD = 5;
+    public static final byte MSG_TYPE_REQUEST = 6;
+    public static final byte MSG_TYPE_PIECE = 7;
 
 }
