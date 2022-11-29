@@ -127,6 +127,8 @@ public class IncomingConnection extends Thread {
 
                 processMessage(); // sends message type, length, and payload along with the peerID of the
 
+
+
             }
 
             System.out.println("Incoming connection thread for " + this.peerID + " has ended");

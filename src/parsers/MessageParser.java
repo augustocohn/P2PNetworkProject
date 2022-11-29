@@ -1,6 +1,7 @@
 package parsers;
 
 import messages.Message;
+import peer.Peer;
 
 public class MessageParser {
 
@@ -25,7 +26,8 @@ public class MessageParser {
                 break;
 
             case 5:
-
+                Peer peer = Peer.getPeerByID(peerID);
+                peer.updateNeighborBitFields(connectedPeer, message.getMessagePayload());
                 break;
 
             case 6:

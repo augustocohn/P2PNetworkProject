@@ -2,6 +2,7 @@ package peer;
 
 import parsers.CommonConfigParser;
 import parsers.PeerConfigParser;
+import utils.Download;
 
 import java.util.*;
 
@@ -39,10 +40,13 @@ public class Peer {
     // update on given interval
     private HashSet<Integer> choked_neighbors = new HashSet<>();
 
+    // used in unison with the priority queue to determine the unchoked neighbors
+    private HashSet<Integer> interested_neighbors;
+
     // recalculate after given interval
     // top k are the preferred neighbors
     // if there are any extra neighbors, of those one will be randomly unchoked on given interval
-    private PriorityQueue<Integer> interested_neighbors;
+    private PriorityQueue<Download> priority_neighbors;
 
     // will be NULL if <k preferred neighbors at a given time (will account for in functionality)
     private Integer optimistically_unchoked;
@@ -143,9 +147,17 @@ public class Peer {
         this.choked_neighbors.remove(peerID);
     }
 
+    public void updateNeighborBitFields(int peerID, byte[] bitfield){
+        this.neighbor_bitFields.put(peerID, bitfield);
+    }
+
     // this needs to be synchronized so that multiple threads don't access it at a time and thus they won't have inconcurrent values
-    synchronized public PriorityQueue<Integer> getInterestedNeighbors() {
+    synchronized public HashSet<Integer> getInterestedNeighbors() {
         return this.interested_neighbors;
+    }
+
+    synchronized public PriorityQueue<Download> getPriorityNeighbors() {
+        return this.priority_neighbors;
     }
 
     // for already created and established peerProcesses, connect to them (if bidirectional initiated connections are needed, then change this functionality)
