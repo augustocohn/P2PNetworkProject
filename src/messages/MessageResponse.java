@@ -11,7 +11,7 @@ import java.net.Socket;
 public class MessageResponse {
 
 
-    public void sendPieceMessage(Socket socket, byte[] filePiece){
+    public void sendPieceMessage(){
 
     }
 

@@ -1,6 +1,7 @@
 package messages;
 
 import peer.Peer;
+import utils.BitFieldUtility;
 
 public class MessageAction {
 
@@ -52,6 +53,16 @@ public class MessageAction {
 
     public void updateUnchokedSets(int peerID, int connectedPeerID) {
         removeFromChokedBy(peerID, connectedPeerID);
+    }
+
+    public void placePiece(int peerID, int index, byte[] piece){
+        BitFieldUtility bitUtil = new BitFieldUtility();
+        bitUtil.placePiece(peerID, index, piece);
+    }
+
+    public void updateBitField(int peerID, int index){
+        BitFieldUtility bitUtil = new BitFieldUtility();
+        bitUtil.updateBitfield(peerID, index);
     }
 
 

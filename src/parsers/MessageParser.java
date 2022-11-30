@@ -12,7 +12,6 @@ public class MessageParser {
     public static void ParseMessage(Message message, int peerID, int connectedPeer) {
 
         MessageAction ma = new MessageAction();
-        BitFieldUtility bitUtil = new BitFieldUtility();
 
         // parse the message depending on the corresponding message type and forward it to the message action
         switch(message.getMessageType()) {
@@ -47,11 +46,10 @@ public class MessageParser {
             case 7:
                 //piece message | update bitfield
                 //Add content to file
-                int piece = (ByteBuffer.wrap(message.getMessagePayload())).getInt();
-
-                bitUtil.placePiece(peerID, piece, message.getMessagePayload());
+                int index = (ByteBuffer.wrap(message.getMessagePayload())).getInt();
+                ma.placePiece(peerID, index, message.getMessagePayload());
                 //Update bitfield
-                bitUtil.updateBitfield(peerID, piece);
+                ma.updateBitField(peerID, index);
                 //
                 //send have message to all neighbors
                 break;
