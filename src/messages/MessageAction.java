@@ -9,21 +9,52 @@ public class MessageAction {
 
 
     // these following two methods might be better off in the Peer class itself
-    public void updateChokeSets(int peerID, int connectedPeerID) {
+    public void addToChokedBy(int peerID, int connectedPeerID) {
         Peer peer = Peer.getPeerByID(peerID);
-        peer.addToChokedBy(connectedPeerID);
+        peer.getChokedby().add(connectedPeerID);
+    }
 
-        Peer connectedPeer = Peer.getPeerByID(connectedPeerID);
-        connectedPeer.addToChokedNeighbors(peerID); // also removes it from unchoked neighbors
+    public void removeFromChokedBy(int peerID, int connectedPeerID) {
+        Peer peer = Peer.getPeerByID(peerID);
+        peer.getChokedby().remove(connectedPeerID);
+    }
+
+    public void addToChokedNeighbors(int peerID, int connectedPeerID) {
+        Peer peer = Peer.getPeerByID(peerID);
+        peer.getChoked_neighbors().add(connectedPeerID);
+        peer.getUnchoked_neighbors().remove(connectedPeerID);
+    }
+
+    public void addToUnchokedNeighbors(int peerID, int connectPeerID) {
+        Peer peer = Peer.getPeerByID(peerID);
+        peer.getUnchoked_neighbors().add(connectPeerID);
+        peer.getChoked_neighbors().remove(connectPeerID);
+    }
+
+    public void addToInterestedNeighbors(int peerID, int connectPeerID){
+        Peer peer = Peer.getPeerByID(peerID);
+        peer.getInterested_neighbors().add(peerID);
+    }
+
+    public void removeFromInterestedNeighbors(int peerID, int connectedPeerID){
+        Peer peer = Peer.getPeerByID(peerID);
+        peer.getInterested_neighbors().remove(connectedPeerID);
+    }
+
+    public void updateNeighborBitFields(int peerID, int connectedPeerID, byte[] bitfield){
+        Peer peer = Peer.getPeerByID(peerID);
+        peer.getNeighbor_bitFields().put(connectedPeerID, bitfield);
+    }
+
+    public void updateChokeSets(int peerID, int connectedPeerID) {
+        addToChokedBy(peerID, connectedPeerID);
     }
 
     public void updateUnchokedSets(int peerID, int connectedPeerID) {
-        Peer peer = Peer.getPeerByID(peerID);
-        peer.removeFromChokedBy(connectedPeerID);
-
-        Peer connectedPeer = Peer.getPeerByID(connectedPeerID);
-        connectedPeer.addToUnchokedNeighbors(peerID); // also removes it from choked neighbors
+        removeFromChokedBy(peerID, connectedPeerID);
     }
+
+
 
 
 

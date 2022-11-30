@@ -5,6 +5,7 @@ import parsers.PeerConfigParser;
 import utils.Download;
 
 import java.util.*;
+import java.util.zip.InflaterInputStream;
 
 public class Peer {
 
@@ -19,6 +20,9 @@ public class Peer {
 
     // this peer's current pieces (tracks what it has and what is needed)
     private byte[] bitField; //TODO figure out if last piece actually needs trailing zeros or not
+
+    //stores the literal contents of the file
+    private byte[] file;
 
     // add new when new connection made
     // update whenever a "have" message is received
@@ -64,7 +68,51 @@ public class Peer {
     Random random = new Random();
 
     public byte[] getLocalBitField(){
-        return bitField;
+        return this.bitField;
+    }
+
+    public void setLocalBitField(byte[] _bitField){
+        this.bitField = _bitField;
+    }
+
+    public static HashMap<Integer, Peer> getPeers(){
+        return peers;
+    }
+
+    public HashMap<Integer, byte[]> getNeighbor_bitFields(){
+        return this.neighbor_bitFields;
+    }
+
+    public HashMap<Integer, Integer> getRequested_pieces(){
+        return this.requested_pieces;
+    }
+
+    public HashSet<Integer> getChokedby(){
+        return this.chokedby;
+    }
+
+    public HashSet<Integer> getUnchoked_neighbors(){
+        return this.unchoked_neighbors;
+    }
+
+    public HashSet<Integer> getChoked_neighbors(){
+        return this.choked_neighbors;
+    }
+
+    public HashSet<Integer> getInterested_neighbors(){
+        return this.interested_neighbors;
+    }
+
+    public PriorityQueue<Download> getPriority_neighbors(){
+        return this.priority_neighbors;
+    }
+
+    public byte[] getFile(){
+        return this.file;
+    }
+
+    public void setFile(byte[] _file){
+        this.file = _file;
     }
 
     void initializeBitField(boolean hasFile, int pieces) {
@@ -88,6 +136,9 @@ public class Peer {
         boolean hasFile = PeerConfigParser.getPeerMetaData(peerID).hasFile();
 
         initializeBitField(hasFile, calculatePieces(fileSize, pieceSize));
+
+        //TODO Initialize file[] to proper size
+        file = new byte[CommonConfigParser.getCommonMetaData().getFileSize()];
 
         this.run();
 
@@ -127,28 +178,6 @@ public class Peer {
         }
         System.out.println("Invalid peer ID in peer object");
         return -1;
-    }
-
-    public void addToChokedBy(int connectedPeerID) {
-        this.chokedby.add(connectedPeerID);
-    }
-
-    public void removeFromChokedBy(int connectedPeerID) {
-        this.chokedby.remove(connectedPeerID);
-    }
-
-    public void addToChokedNeighbors(int peerID) {
-        this.choked_neighbors.add(peerID);
-        this.unchoked_neighbors.remove(peerID);
-    }
-
-    public void addToUnchokedNeighbors(int peerID) {
-        this.unchoked_neighbors.add(peerID);
-        this.choked_neighbors.remove(peerID);
-    }
-
-    public void updateNeighborBitFields(int peerID, byte[] bitfield){
-        this.neighbor_bitFields.put(peerID, bitfield);
     }
 
     // this needs to be synchronized so that multiple threads don't access it at a time and thus they won't have inconcurrent values
