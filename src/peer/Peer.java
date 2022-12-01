@@ -4,8 +4,13 @@ import parsers.CommonConfigParser;
 import parsers.PeerConfigParser;
 import utils.Download;
 
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
-import java.util.zip.InflaterInputStream;
+import java.io.File;
+import java.nio.file.Files;
+
 
 public class Peer {
 
@@ -23,6 +28,8 @@ public class Peer {
 
     //stores the literal contents of the file
     private byte[] file;
+
+    private Path fileLocation;
 
     // add new when new connection made
     // update whenever a "have" message is received
@@ -79,7 +86,7 @@ public class Peer {
         return peers;
     }
 
-    public HashMap<Integer, byte[]> getNeighbor_bitFields(){
+    public HashMap<Integer, byte[]> getNeighborBitFields(){
         return this.neighbor_bitFields;
     }
 
@@ -105,6 +112,10 @@ public class Peer {
 
     public PriorityQueue<Download> getPriority_neighbors(){
         return this.priority_neighbors;
+    }
+
+    public ArrayList<OutgoingConnection> getOutgoingConnections() {
+        return this.outgoingConnections;
     }
 
     public byte[] getFile(){
@@ -133,12 +144,22 @@ public class Peer {
 
         int pieceSize = CommonConfigParser.getCommonMetaData().getPieceSize();
         int fileSize = CommonConfigParser.getCommonMetaData().getFileSize();
+        String fileName = CommonConfigParser.getCommonMetaData().getFileName();
+        this.fileLocation = Paths.get(System.getProperty("user.dir") + "\\" + peerID + "\\" + fileName);
         boolean hasFile = PeerConfigParser.getPeerMetaData(peerID).hasFile();
 
         initializeBitField(hasFile, calculatePieces(fileSize, pieceSize));
 
         //TODO Initialize file[] to proper size
         file = new byte[CommonConfigParser.getCommonMetaData().getFileSize()];
+
+        if(hasFile){
+            try {
+                file = Files.readAllBytes(this.fileLocation);
+            } catch (Exception e){
+                System.out.println("CANNOT READ FILE");
+            }
+        }
 
         this.run();
 

@@ -9,56 +9,36 @@ import parsers.PeerConfigParser;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
-import java.nio.ByteBuffer;
-import java.util.Arrays;
 
 public class OutgoingConnection extends Thread {
 
-    private int peerID;
-    private int destinationPeerID;
-    private String destinationHost;
-    private int destinationPortNum;
+    private final int peerID;
+    private final int connectedPeerID;
+    private final String destinationHost;
+    private final int destinationPortNum;
     private Socket portConnection;
     private ObjectOutputStream out;    //stream write to the socket
 
+    public int getPeerID(){
+        return this.peerID;
+    }
+
+    public int getConnectedPeerID(){
+        return this.connectedPeerID;
+    }
+    public String getDestinationHost(){
+        return this.destinationHost;
+    }
+
+    public int getDestinationPortNum(){
+        return this.destinationPortNum;
+    }
+
     public OutgoingConnection(int peerID, int destinationPeerID, String destinationHost, int destinationPortNum) {
         this.peerID = peerID;
-        this.destinationPeerID = destinationPeerID;
+        this.connectedPeerID = destinationPeerID;
         this.destinationHost = destinationHost;
         this.destinationPortNum = destinationPortNum;
-    }
-
-    private void sendMessage(String msg)
-    {
-        try{
-            out.writeObject(msg);
-            out.flush();
-            System.out.println("Send message: " + msg + " to Client " + destinationPeerID);
-        }
-        catch(IOException ioException){
-            ioException.printStackTrace();
-        }
-    }
-
-    private void sendMessage(byte[] msg){
-        try{
-            out.writeObject(msg);
-            out.flush();
-
-            if(msg[0] == 'P') {
-                //Converts byte array to int for interpretation
-                ByteBuffer pID_buff = ByteBuffer.wrap(Arrays.copyOfRange(msg, 28, 32));
-                int pID = pID_buff.getInt();
-
-                String str_msg = new String(Arrays.copyOfRange(msg, 0, 28));
-                System.out.println("Peer: " + this.peerID + " sent message: " + str_msg + pID + " to Client " + destinationPeerID);
-            } else {
-                System.out.println("Peer: " + this.peerID + " sent message type: " + (int)msg[4] + " to Client " + destinationPeerID);
-            }
-        }
-        catch(IOException ioException){
-            ioException.printStackTrace();
-        }
     }
 
     public void run() {
@@ -105,5 +85,28 @@ public class OutgoingConnection extends Thread {
 
         System.out.println("Outgoing connection thread for " + this.peerID + " has ended");
     }
+
+    public void sendPieceMessage(){
+        try{
+            Peer peer = Peer.getPeerByID(peerID);
+
+        } catch(Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    private void sendMessage(byte[] msg){
+        try{
+            out.writeObject(msg);
+            out.flush();
+        }
+        catch(IOException ioException){
+            ioException.printStackTrace();
+        }
+    }
+
+
+
+
 
 }

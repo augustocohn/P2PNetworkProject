@@ -1,6 +1,7 @@
 package messages;
 
 import messages.Message;
+import peer.OutgoingConnection;
 import peer.Peer;
 
 import java.io.ObjectOutputStream;
@@ -11,8 +12,13 @@ import java.net.Socket;
 public class MessageResponse {
 
 
-    public void sendPieceMessage(){
-
+    public void sendPieceMessage(int peerID, int connectedPeerID, int piece){
+        Peer peer = Peer.getPeerByID(peerID);
+        for(OutgoingConnection ogc : peer.getOutgoingConnections()){
+            if(ogc.getConnectedPeerID() == connectedPeerID){
+                ogc.sendPieceMessage();
+            }
+        }
     }
 
 

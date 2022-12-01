@@ -44,7 +44,12 @@ public class MessageAction {
 
     public void updateNeighborBitFields(int peerID, int connectedPeerID, byte[] bitfield){
         Peer peer = Peer.getPeerByID(peerID);
-        peer.getNeighbor_bitFields().put(connectedPeerID, bitfield);
+        peer.getNeighborBitFields().put(connectedPeerID, bitfield);
+    }
+
+    public void updateNeighborBitField(int peerID, int connectedPeerID, int piece){
+        BitFieldUtility bitUtil = new BitFieldUtility();
+        bitUtil.updateNeighborBitField(peerID, connectedPeerID, piece);
     }
 
     public void updateChokeSets(int peerID, int connectedPeerID) {

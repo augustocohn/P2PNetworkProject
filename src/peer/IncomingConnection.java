@@ -7,7 +7,7 @@ import java.util.Arrays;
 
 import constants.GlobalConstants;
 import messages.Message;
-import parsers.MessageParser;
+import messages.MessageParser;
 
 public class IncomingConnection extends Thread {
 

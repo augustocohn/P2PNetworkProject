@@ -12,12 +12,11 @@ public final class BitFieldUtility {
 
 
     public void updateBitfield(int peerID, int piece){
-        //TODO
         Peer peer = Peer.getPeerByID(peerID);
         int index = piece/8;
         int pos_index = piece%8;
         byte[] updated_bitfield = peer.getLocalBitField();
-        updated_bitfield[index] = (byte) (updated_bitfield[index] | pos[pos_index]);
+        updated_bitfield[index] = (byte)(updated_bitfield[index] | pos[pos_index]);
         peer.setLocalBitField(updated_bitfield);
     }
 
@@ -27,6 +26,15 @@ public final class BitFieldUtility {
         ByteBuffer buffer = ByteBuffer.wrap(peer.getFile());
         buffer.put(piece, size*index, piece.length);
         peer.setFile(buffer.array());
+    }
+
+    public void updateNeighborBitField(int peerID, int connectedPeerID, int piece){
+        Peer peer = Peer.getPeerByID(peerID);
+        int index = piece/8;
+        int pos_index = piece%8;
+        byte[] updated_bitfield = peer.getNeighborBitFields().get(connectedPeerID);
+        updated_bitfield[index] = (byte)((updated_bitfield[index]) | pos[pos_index]);
+        peer.getNeighborBitFields().replace(connectedPeerID, updated_bitfield);
     }
 
 

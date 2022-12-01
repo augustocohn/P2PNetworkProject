@@ -1,7 +1,8 @@
-package parsers;
+package messages;
 
 import messages.Message;
 import messages.MessageAction;
+import messages.MessageResponse;
 import peer.Peer;
 import utils.BitFieldUtility;
 
@@ -12,6 +13,8 @@ public class MessageParser {
     public static void ParseMessage(Message message, int peerID, int connectedPeer) {
 
         MessageAction ma = new MessageAction();
+        MessageResponse mr = new MessageResponse();
+        int index = 0;
 
         // parse the message depending on the corresponding message type and forward it to the message action
         switch(message.getMessageType()) {
@@ -31,7 +34,8 @@ public class MessageParser {
                 break;
 
             case 4:
-                //TODO
+                index = (ByteBuffer.wrap(message.getMessagePayload())).getInt();
+                ma.updateNeighborBitField(peerID, connectedPeer, index);
                 break;
 
             case 5:
@@ -40,13 +44,15 @@ public class MessageParser {
 
             case 6:
                 //request message | kick off sending piece message
+                index = (ByteBuffer.wrap(message.getMessagePayload())).getInt();
+                mr.sendPieceMessage(peerID, connectedPeer, index);
                 //Message Action to send message containing literal file contents
                 break;
 
             case 7:
                 //piece message | update bitfield
                 //Add content to file
-                int index = (ByteBuffer.wrap(message.getMessagePayload())).getInt();
+                index = (ByteBuffer.wrap(message.getMessagePayload())).getInt();
                 ma.placePiece(peerID, index, message.getMessagePayload());
                 //Update bitfield
                 ma.updateBitField(peerID, index);
