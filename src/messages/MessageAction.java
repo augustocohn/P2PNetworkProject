@@ -20,18 +20,6 @@ public class MessageAction {
         peer.getChokedby().remove(connectedPeerID);
     }
 
-    public void addToChokedNeighbors(int peerID, int connectedPeerID) {
-        Peer peer = Peer.getPeerByID(peerID);
-        peer.getChoked_neighbors().add(connectedPeerID);
-        peer.getUnchoked_neighbors().remove(connectedPeerID);
-    }
-
-    public void addToUnchokedNeighbors(int peerID, int connectPeerID) {
-        Peer peer = Peer.getPeerByID(peerID);
-        peer.getUnchoked_neighbors().add(connectPeerID);
-        peer.getChoked_neighbors().remove(connectPeerID);
-    }
-
     public void addToInterestedNeighbors(int peerID, int connectPeerID){
         Peer peer = Peer.getPeerByID(peerID);
         peer.getInterested_neighbors().add(peerID);
@@ -50,14 +38,6 @@ public class MessageAction {
     public void updateNeighborBitField(int peerID, int connectedPeerID, int piece){
         BitFieldUtility bitUtil = new BitFieldUtility();
         bitUtil.updateNeighborBitField(peerID, connectedPeerID, piece);
-    }
-
-    public void updateChokeSets(int peerID, int connectedPeerID) {
-        addToChokedBy(peerID, connectedPeerID);
-    }
-
-    public void updateUnchokedSets(int peerID, int connectedPeerID) {
-        removeFromChokedBy(peerID, connectedPeerID);
     }
 
     public void placePiece(int peerID, int index, byte[] piece){

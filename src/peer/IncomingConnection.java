@@ -8,6 +8,7 @@ import java.util.Arrays;
 import constants.GlobalConstants;
 import messages.Message;
 import messages.MessageParser;
+import messages.MessageResponse;
 
 public class IncomingConnection extends Thread {
 
@@ -110,6 +111,7 @@ public class IncomingConnection extends Thread {
             if(connectedPeerID == -1) { throw new Exception("Invalid handshake message received"); }
 
 
+            MessageResponse mr = new MessageResponse();
             // run an infinite loop that parses incoming messages until the connection closes
             while(portConnection.isConnected()) {
                 // call method - passes peer id as param and returns the boolean memb

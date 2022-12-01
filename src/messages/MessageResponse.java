@@ -12,6 +12,26 @@ import java.net.Socket;
 public class MessageResponse {
 
 
+    public void addToChokedNeighbors(int peerID, int connectedPeerID) {
+        Peer peer = Peer.getPeerByID(peerID);
+        peer.getChoked_neighbors().add(connectedPeerID);
+        peer.getUnchoked_neighbors().remove(connectedPeerID);
+    }
+
+    public void addToUnchokedNeighbors(int peerID, int connectPeerID) {
+        Peer peer = Peer.getPeerByID(peerID);
+        peer.getUnchoked_neighbors().add(connectPeerID);
+        peer.getChoked_neighbors().remove(connectPeerID);
+    }
+
+    public void updateChokeSets(int peerID, int connectedPeerID) {
+        //addToChokedBy(peerID, connectedPeerID);
+    }
+
+    public void updateUnchokedSets(int peerID, int connectedPeerID) {
+        //removeFromChokedBy(peerID, connectedPeerID);
+    }
+
     public void sendPieceMessage(int peerID, int connectedPeerID, int index){
         Peer peer = Peer.getPeerByID(peerID);
         for(OutgoingConnection ogc : peer.getOutgoingConnections()){
@@ -25,6 +45,51 @@ public class MessageResponse {
         Peer peer = Peer.getPeerByID(peerID);
         for(OutgoingConnection ogc : peer.getOutgoingConnections()){
             ogc.sendHaveMessage(index);
+        }
+    }
+
+    public void sendChokeMessage(int peerID, int connectedPeerID){
+        Peer peer = Peer.getPeerByID(peerID);
+        for(OutgoingConnection ogc : peer.getOutgoingConnections()){
+            if(ogc.getConnectedPeerID() == connectedPeerID){
+                ogc.sendChokeMessage();
+            }
+        }
+    }
+
+    public void sendUnchokeMessage(int peerID, int connectedPeerID){
+        Peer peer = Peer.getPeerByID(peerID);
+        for(OutgoingConnection ogc : peer.getOutgoingConnections()){
+            if(ogc.getConnectedPeerID() == connectedPeerID){
+                ogc.sendUnchokeMessage();
+            }
+        }
+    }
+
+    public void sendInterestedMessage(int peerID, int connectedPeerID){
+        Peer peer = Peer.getPeerByID(peerID);
+        for(OutgoingConnection ogc : peer.getOutgoingConnections()){
+            if(ogc.getConnectedPeerID() == connectedPeerID){
+                ogc.sendInterestedMessage();
+            }
+        }
+    }
+
+    public void sendNotInterestedMessage(int peerID, int connectedPeerID){
+        Peer peer = Peer.getPeerByID(peerID);
+        for(OutgoingConnection ogc : peer.getOutgoingConnections()){
+            if(ogc.getConnectedPeerID() == connectedPeerID){
+                ogc.sendNotInterestedMessage();
+            }
+        }
+    }
+
+    public void sendRequestMessage(int peerID, int connectedPeerID, int index){
+        Peer peer = Peer.getPeerByID(peerID);
+        for(OutgoingConnection ogc : peer.getOutgoingConnections()){
+            if(ogc.getConnectedPeerID() == connectedPeerID){
+                ogc.sendRequestMessage(index);
+            }
         }
     }
 

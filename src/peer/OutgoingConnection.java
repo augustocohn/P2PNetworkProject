@@ -65,17 +65,12 @@ public class OutgoingConnection extends Thread {
 
             //bitfield stuff
             if(PeerConfigParser.getPeerMetaData(peerID).hasFile()) {
-                Message mes = new Message(GlobalConstants.MSG_TYPE_BITFIELD, peer.getLocalBitField().length, peer.getLocalBitField());
-                sendMessage(mes.getByteMessage());
+                sendBitfieldMessage(peer);
             }
-
 
         } catch(Exception e){
             e.printStackTrace();
         }
-
-
-        // send bit field message stuff
 
         // while connection is open, do some periodic messaging
         while(!Peer.getCanCloseConnection()) {
@@ -91,24 +86,46 @@ public class OutgoingConnection extends Thread {
         return BigInteger.valueOf(val).toByteArray();
     }
 
-    public void sendPieceMessage(int index){
-        try{
-            FileUtility fileUtil = new FileUtility();
-            byte[] payload = fileUtil.getFilePieceBytes(peerID, index);
-            Message message = new Message(GlobalConstants.MSG_TYPE_PIECE, payload.length, payload);
-            sendMessage(message.getByteMessage());
-        } catch(Exception e){
-            e.printStackTrace();
-        }
+    public void sendChokeMessage(){
+        Message mes = new Message(GlobalConstants.MSG_TYPE_CHOKE, 0, new byte[]{});
+        sendMessage(mes.getByteMessage());
+    }
+
+    public void sendUnchokeMessage(){
+        Message mes = new Message(GlobalConstants.MSG_TYPE_UNCHOKE, 0, new byte[]{});
+        sendMessage(mes.getByteMessage());
+    }
+
+    public void sendInterestedMessage(){
+        Message mes = new Message(GlobalConstants.MSG_TYPE_INTERESTED, 0, new byte[]{});
+        sendMessage(mes.getByteMessage());
+    }
+
+    public void sendNotInterestedMessage(){
+        Message mes = new Message(GlobalConstants.MSG_TYPE_NOT_INTERESTED, 0, new byte[]{});
+        sendMessage(mes.getByteMessage());
     }
 
     public void sendHaveMessage(int index){
-        try{
-            Message message = new Message(GlobalConstants.MSG_TYPE_HAVE, 4, convertIntToByte(index));
-            sendMessage(message.getByteMessage());
-        } catch(Exception e){
-            e.printStackTrace();
-        }
+        Message mes = new Message(GlobalConstants.MSG_TYPE_HAVE, 4, convertIntToByte(index));
+        sendMessage(mes.getByteMessage());
+    }
+
+    public void sendBitfieldMessage(Peer peer){
+        Message mes = new Message(GlobalConstants.MSG_TYPE_BITFIELD, peer.getLocalBitField().length, peer.getLocalBitField());
+        sendMessage(mes.getByteMessage());
+    }
+
+    public void sendRequestMessage(int index){
+        Message mes = new Message(GlobalConstants.MSG_TYPE_REQUEST, 4, convertIntToByte(index));
+        sendMessage(mes.getByteMessage());
+    }
+
+    public void sendPieceMessage(int index){
+        FileUtility fileUtil = new FileUtility();
+        byte[] payload = fileUtil.getFilePieceBytes(peerID, index);
+        Message message = new Message(GlobalConstants.MSG_TYPE_PIECE, payload.length, payload);
+        sendMessage(message.getByteMessage());
     }
 
     private void sendMessage(byte[] msg){
