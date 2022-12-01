@@ -5,9 +5,11 @@ import constants.GlobalConstants;
 import messages.HandshakeMessage;
 import messages.Message;
 import parsers.PeerConfigParser;
+import utils.FileUtility;
 
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.math.BigInteger;
 import java.net.Socket;
 
 public class OutgoingConnection extends Thread {
@@ -29,7 +31,6 @@ public class OutgoingConnection extends Thread {
     public String getDestinationHost(){
         return this.destinationHost;
     }
-
     public int getDestinationPortNum(){
         return this.destinationPortNum;
     }
@@ -86,10 +87,25 @@ public class OutgoingConnection extends Thread {
         System.out.println("Outgoing connection thread for " + this.peerID + " has ended");
     }
 
-    public void sendPieceMessage(){
-        try{
-            Peer peer = Peer.getPeerByID(peerID);
+    public byte[] convertIntToByte(int val){
+        return BigInteger.valueOf(val).toByteArray();
+    }
 
+    public void sendPieceMessage(int index){
+        try{
+            FileUtility fileUtil = new FileUtility();
+            byte[] payload = fileUtil.getFilePieceBytes(peerID, index);
+            Message message = new Message(GlobalConstants.MSG_TYPE_PIECE, payload.length, payload);
+            sendMessage(message.getByteMessage());
+        } catch(Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    public void sendHaveMessage(int index){
+        try{
+            Message message = new Message(GlobalConstants.MSG_TYPE_HAVE, 4, convertIntToByte(index));
+            sendMessage(message.getByteMessage());
         } catch(Exception e){
             e.printStackTrace();
         }

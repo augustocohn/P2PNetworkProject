@@ -12,12 +12,19 @@ import java.net.Socket;
 public class MessageResponse {
 
 
-    public void sendPieceMessage(int peerID, int connectedPeerID, int piece){
+    public void sendPieceMessage(int peerID, int connectedPeerID, int index){
         Peer peer = Peer.getPeerByID(peerID);
         for(OutgoingConnection ogc : peer.getOutgoingConnections()){
             if(ogc.getConnectedPeerID() == connectedPeerID){
-                ogc.sendPieceMessage();
+                ogc.sendPieceMessage(index);
             }
+        }
+    }
+
+    public void sendHaveMessage(int peerID, int index){
+        Peer peer = Peer.getPeerByID(peerID);
+        for(OutgoingConnection ogc : peer.getOutgoingConnections()){
+            ogc.sendHaveMessage(index);
         }
     }
 

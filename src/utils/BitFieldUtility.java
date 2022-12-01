@@ -20,14 +20,6 @@ public final class BitFieldUtility {
         peer.setLocalBitField(updated_bitfield);
     }
 
-    public void placePiece(int peerID, int index, byte[] piece){
-        int size = CommonConfigParser.getCommonMetaData().getPieceSize();
-        Peer peer = Peer.getPeerByID(peerID);
-        ByteBuffer buffer = ByteBuffer.wrap(peer.getFile());
-        buffer.put(piece, size*index, piece.length);
-        peer.setFile(buffer.array());
-    }
-
     public void updateNeighborBitField(int peerID, int connectedPeerID, int piece){
         Peer peer = Peer.getPeerByID(peerID);
         int index = piece/8;
@@ -36,6 +28,15 @@ public final class BitFieldUtility {
         updated_bitfield[index] = (byte)((updated_bitfield[index]) | pos[pos_index]);
         peer.getNeighborBitFields().replace(connectedPeerID, updated_bitfield);
     }
+
+    public void placePiece(int peerID, int index, byte[] piece){
+        int size = CommonConfigParser.getCommonMetaData().getPieceSize();
+        Peer peer = Peer.getPeerByID(peerID);
+        ByteBuffer buffer = ByteBuffer.wrap(peer.getFile());
+        buffer.put(piece, size*index, piece.length);
+        peer.setFile(buffer.array());
+    }
+
 
 
 

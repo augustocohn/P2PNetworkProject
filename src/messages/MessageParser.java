@@ -46,7 +46,6 @@ public class MessageParser {
                 //request message | kick off sending piece message
                 index = (ByteBuffer.wrap(message.getMessagePayload())).getInt();
                 mr.sendPieceMessage(peerID, connectedPeer, index);
-                //Message Action to send message containing literal file contents
                 break;
 
             case 7:
@@ -56,8 +55,8 @@ public class MessageParser {
                 ma.placePiece(peerID, index, message.getMessagePayload());
                 //Update bitfield
                 ma.updateBitField(peerID, index);
-                //
                 //send have message to all neighbors
+                mr.sendHaveMessage(peerID, index);
                 break;
 
             default:
