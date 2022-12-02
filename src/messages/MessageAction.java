@@ -22,7 +22,7 @@ public class MessageAction {
 
     public void addToInterestedNeighbors(int peerID, int connectPeerID){
         Peer peer = Peer.getPeerByID(peerID);
-        peer.getInterested_neighbors().add(peerID);
+        peer.getInterested_neighbors().add(connectPeerID);
     }
 
     public void removeFromInterestedNeighbors(int peerID, int connectedPeerID){

@@ -1,9 +1,13 @@
 package utils;
 
+import messages.MessageAction;
+import messages.MessageResponse;
 import parsers.CommonConfigParser;
 import peer.Peer;
 
 import java.nio.ByteBuffer;
+import java.util.Arrays;
+import java.util.stream.Stream;
 
 public final class BitFieldUtility {
 
@@ -27,6 +31,34 @@ public final class BitFieldUtility {
         byte[] updated_bitfield = peer.getNeighborBitFields().get(connectedPeerID);
         updated_bitfield[index] = (byte)((updated_bitfield[index]) | pos[pos_index]);
         peer.getNeighborBitFields().replace(connectedPeerID, updated_bitfield);
+    }
+
+    public void compareBitfields(int peerID){
+        MessageResponse mr = new MessageResponse();
+        Peer peer = Peer.getPeerByID(peerID);
+
+        for(Peer p : Peer.getPeers().values()){
+            if(compareBitfield(peer, p)) {
+                mr.sendNotInterestedMessage(peerID, p.getPeerID());
+            } else {
+                mr.sendInterestedMessage(peerID, p.getPeerID());
+            }
+        }
+    }
+
+    public boolean compareBitfield(Peer peer, Peer connectedPeer) {
+
+        byte[] peerBitfield = peer.getLocalBitField().clone();
+        byte[] connectedPeerBitfield = peer.getNeighborBitFields().get(connectedPeer.getPeerID());
+
+        for(int i = 0; i < peerBitfield.length; i++) {
+            byte tempByte = (byte)(peerBitfield[i] | connectedPeerBitfield[i]);
+            if(tempByte != peerBitfield[i]) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     public void placePiece(int peerID, int index, byte[] piece){

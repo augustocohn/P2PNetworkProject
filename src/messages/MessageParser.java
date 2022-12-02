@@ -34,8 +34,10 @@ public class MessageParser {
                 break;
 
             case 4:
+                //have
                 index = (ByteBuffer.wrap(message.getMessagePayload())).getInt();
                 ma.updateNeighborBitField(peerID, connectedPeer, index);
+                mr.updateBitField(peerID, connectedPeer);
                 break;
 
             case 5:
@@ -55,6 +57,8 @@ public class MessageParser {
                 ma.placePiece(peerID, index, message.getMessagePayload());
                 //Update bitfield
                 ma.updateBitField(peerID, index);
+                //cascade interested/non-interested changes
+                mr.updateBitFields(peerID);
                 //send have message to all neighbors
                 mr.sendHaveMessage(peerID, index);
                 break;

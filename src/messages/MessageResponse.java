@@ -3,6 +3,7 @@ package messages;
 import messages.Message;
 import peer.OutgoingConnection;
 import peer.Peer;
+import utils.BitFieldUtility;
 
 import java.io.ObjectOutputStream;
 import java.net.Socket;
@@ -24,12 +25,27 @@ public class MessageResponse {
         peer.getChoked_neighbors().remove(connectPeerID);
     }
 
-    public void updateChokeSets(int peerID, int connectedPeerID) {
-        //addToChokedBy(peerID, connectedPeerID);
+//    public void updateChokeSets(int peerID, int connectedPeerID) {
+//        //addToChokedBy(peerID, connectedPeerID);
+//    }
+//
+//    public void updateUnchokedSets(int peerID, int connectedPeerID) {
+//        //removeFromChokedBy(peerID, connectedPeerID);
+//    }
+
+    public void updateBitFields(int peerID) {
+        BitFieldUtility bitUtil = new BitFieldUtility();
+        bitUtil.compareBitfields(peerID);
     }
 
-    public void updateUnchokedSets(int peerID, int connectedPeerID) {
-        //removeFromChokedBy(peerID, connectedPeerID);
+    public void updateBitField(int peerID, int connectedPeerID) {
+        BitFieldUtility bitUtil = new BitFieldUtility();
+        boolean bitFieldDiff = bitUtil.compareBitfield(Peer.getPeerByID(peerID), Peer.getPeerByID(connectedPeerID));
+        if(bitFieldDiff) {
+            sendNotInterestedMessage(peerID, connectedPeerID);
+        } else {
+            sendInterestedMessage(peerID, connectedPeerID);
+        }
     }
 
     public void sendPieceMessage(int peerID, int connectedPeerID, int index){

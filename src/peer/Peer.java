@@ -1,14 +1,13 @@
 package peer;
 
+import messages.MessageResponse;
 import parsers.CommonConfigParser;
 import parsers.PeerConfigParser;
 import utils.Download;
 
-import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
-import java.io.File;
 import java.nio.file.Files;
 
 
@@ -48,9 +47,6 @@ public class Peer {
     // update on given interval
     private HashSet<Integer> unchoked_neighbors = new HashSet<>();
 
-    // update on given interval
-    private HashSet<Integer> choked_neighbors = new HashSet<>();
-
     // used in unison with the priority queue to determine the unchoked neighbors
     private HashSet<Integer> interested_neighbors;
 
@@ -58,6 +54,7 @@ public class Peer {
     // top k are the preferred neighbors
     // if there are any extra neighbors, of those one will be randomly unchoked on given interval
     private PriorityQueue<Download> priority_neighbors;
+    private HashSet<Download> priority_neighbors_set;
 
     // will be NULL if <k preferred neighbors at a given time (will account for in functionality)
     private Integer optimistically_unchoked;
@@ -73,6 +70,10 @@ public class Peer {
 
     // random generator (variable so "randomness" is not reset)
     Random random = new Random();
+
+    public int getPeerID() {
+        return this.peerID;
+    }
 
     public byte[] getLocalBitField(){
         return this.bitField;
@@ -101,11 +102,6 @@ public class Peer {
     public HashSet<Integer> getUnchoked_neighbors(){
         return this.unchoked_neighbors;
     }
-
-    public HashSet<Integer> getChoked_neighbors(){
-        return this.choked_neighbors;
-    }
-
     public HashSet<Integer> getInterested_neighbors(){
         return this.interested_neighbors;
     }
@@ -254,10 +250,43 @@ public class Peer {
 
     }
 
-    synchronized public void recalculateInterestedNeighbors() { // synchronized so that it doesn't cause inconcurrenices
+    synchronized public void calculateUnchokedNeighbors() { // synchronized so that it doesn't cause inconcurrenices
         //TODO
         // deconstructs priority queue (or destroys it, whatever)
         // reconstructs it using calculations via values from previous interval (make sure this calls get interested neighbors bc synchronous)
+        PriorityQueue<Download> neighs = new PriorityQueue<>(this.priority_neighbors_set);
+        this.getUnchoked_neighbors().clear();
+        int count = 0;
+
+        MessageResponse mr = new MessageResponse();
+
+        if(false) {  //TODO return boolean if bitfield is full
+
+            // this peer has a full file, the preferred neighbors are randomly selected
+
+        } else {
+            while (!neighs.isEmpty()) {
+
+                if (count == CommonConfigParser.getCommonMetaData().getNumOfPrefNeighbors()) {
+                    break;
+                }
+
+                Download top = neighs.poll();
+                if (this.getInterested_neighbors().contains(top.getPeerID())) {
+                    mr.addToUnchokedNeighbors(this.peerID, top.getPeerID());
+                    mr.sendUnchokeMessage(this.peerID, top.getPeerID());
+                    count++;
+                }
+            }
+
+            for(Peer p : Peer.getPeers().values()) {
+                if(!this.getUnchoked_neighbors().contains(p)) {
+                    mr.sendChokeMessage(this.peerID, p.getPeerID());
+                }
+            }
+
+        }
+
     }
 
     // to create functionality here, need to find out how to calculate the download rate for each neighbor
@@ -268,7 +297,7 @@ public class Peer {
             //TODO need functionality to calculate download rate for a given interval to thus update interested neighbors accordingly
             // priority queue that can somehow track the download rate as priority and the IDs as values
 
-            recalculateInterestedNeighbors(); //gotta implement this method to recalculate interested neighbors
+            calculateUnchokedNeighbors(); //gotta implement this method to recalculate interested neighbors
 
         }
 
