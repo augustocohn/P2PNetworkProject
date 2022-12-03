@@ -42,6 +42,7 @@ public class MessageParser {
 
             case 5:
                 ma.updateNeighborBitFields(peerID, connectedPeer, message.getMessagePayload());
+                mr.updateBitField(peerID, connectedPeer);
                 break;
 
             case 6:

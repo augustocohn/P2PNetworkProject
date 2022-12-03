@@ -75,6 +75,7 @@ public class OutgoingConnection extends Thread {
         // while connection is open, do some periodic messaging
         while(!Peer.getCanCloseConnection()) {
             //do periodic communcications
+
         }
 
         // once connection is allowed to be closed (boolean will break while loop above), close the outgoing connections

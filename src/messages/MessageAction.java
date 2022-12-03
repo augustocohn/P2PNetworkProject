@@ -23,12 +23,12 @@ public class MessageAction {
 
     public void addToInterestedNeighbors(int peerID, int connectPeerID){
         Peer peer = Peer.getPeerByID(peerID);
-        peer.getInterested_neighbors().add(connectPeerID);
+        peer.getInterestedNeighbors().add(connectPeerID);
     }
 
     public void removeFromInterestedNeighbors(int peerID, int connectedPeerID){
         Peer peer = Peer.getPeerByID(peerID);
-        peer.getInterested_neighbors().remove(connectedPeerID);
+        peer.getInterestedNeighbors().remove(connectedPeerID);
     }
 
     public void updateNeighborBitFields(int peerID, int connectedPeerID, byte[] bitfield){
@@ -54,14 +54,14 @@ public class MessageAction {
     public void updateDownloadSpeed(int peerID, int connectedPeerID) {
 
         Peer peer = Peer.getPeerByID(peerID);
-        for(Download download : peer.getPriority_neighbors()) {
+        for(Download download : peer.getPriorityNeighbors()) {
             if(download.getPeerID() == connectedPeerID) {
                 download.incrementCount();
                 return;
             }
         }
 
-        peer.getPriority_neighbors().add((new Download(connectedPeerID, 1)));
+        peer.getPriorityNeighbors().add((new Download(connectedPeerID, 1)));
 
     }
 

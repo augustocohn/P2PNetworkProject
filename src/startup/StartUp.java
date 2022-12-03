@@ -24,6 +24,7 @@ public class StartUp {
         for(PeerMetaData pmd : PeerConfigParser.getPeersMetaData()){
             System.out.println("Adding peer: " + pmd.getPeerID());
             Peer p = new Peer(pmd.getPeerID());
+            p.start();
         }
 
     }

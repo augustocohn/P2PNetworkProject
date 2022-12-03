@@ -18,6 +18,10 @@ public final class BitFieldUtility {
             (byte)0b11111000, (byte)0b11111100, (byte)0b11111110};
 
 
+    public byte[] getLastPos(){
+        return lastPos;
+    }
+
     public void updateBitfield(int peerID, int piece){
         Peer peer = Peer.getPeerByID(peerID);
         int index = piece/8;
@@ -86,10 +90,7 @@ public final class BitFieldUtility {
 
         }
 
-        int fileSize = CommonConfigParser.getCommonMetaData().getFileSize();
-        int pieceSize = CommonConfigParser.getCommonMetaData().getPieceSize();
-        int pieces = fileSize % pieceSize == 0 ? fileSize/pieceSize : fileSize/pieceSize + 1;
-
+        int pieces = Peer.calculatePieces();
         //account for that last byte
         int mod = pieces%8;
         if(lastPos[mod] != peer.getLocalBitField()[peer.getLocalBitField().length - 1]) {
