@@ -14,8 +14,8 @@ public final class BitFieldUtility {
     final static byte[] pos = new byte[] {(byte)0b10000000, (byte)0b01000000, (byte)0b00100000, (byte)0b00010000,
             (byte)0b00001000, (byte)0b00000100, (byte)0b00000010, (byte)0b00000001};
 
-    final static byte[] lastPos = new byte[] {(byte)0b10000000, (byte)0b11000000, (byte)0b11100000, (byte)0b11110000,
-            (byte)0b11111000, (byte)0b11111100, (byte)0b11111110, (byte)0b11111111};
+    final static byte[] lastPos = new byte[] {(byte)0b11111111, (byte)0b10000000, (byte)0b11000000, (byte)0b11100000, (byte)0b11110000,
+            (byte)0b11111000, (byte)0b11111100, (byte)0b11111110};
 
 
     public void updateBitfield(int peerID, int piece){
@@ -72,29 +72,55 @@ public final class BitFieldUtility {
         peer.setFile(buffer.array());
     }
 
-    //TODO TEST THIS
     public boolean isBitFieldFull(int peerID) {
         Peer peer = Peer.getPeerByID(peerID);
 
-        byte temp = (byte)(0b11111111);
-
+        byte full = (byte)0b11111111;
         //accounts for all parts of the bitfield except the last byte
         for(int i = 0; i < peer.getLocalBitField().length - 1; i++) {
 
-            byte tempByte = (byte)(temp & peer.getLocalBitField()[i]);
-            if(tempByte != peer.getLocalBitField()[i]) {
+            byte temp = (byte)(full & peer.getLocalBitField()[i]);
+            if(temp != full) {
+                return false;
+            }
+
+        }
+
+        int fileSize = CommonConfigParser.getCommonMetaData().getFileSize();
+        int pieceSize = CommonConfigParser.getCommonMetaData().getPieceSize();
+        int pieces = fileSize % pieceSize == 0 ? fileSize/pieceSize : fileSize/pieceSize + 1;
+
+        //account for that last byte
+        int mod = pieces%8;
+        if(lastPos[mod] != peer.getLocalBitField()[peer.getLocalBitField().length - 1]) {
+            return false;
+        }
+        return true;
+
+    }
+
+    //TEST FUNCTION
+    public boolean isBitFieldFull(byte[] b){
+        byte temp = (byte)(0b11111111);
+
+        //accounts for all parts of the bitfield except the last byte
+        for(int i = 0; i < b.length - 1; i++) {
+
+            byte tempByte = (byte)(temp & b[i]);
+            if(tempByte != temp) {
                 return false;
             }
 
         }
 
         //account for that last byte
-        int mod = peer.getLocalBitField().length % 8;
-        if(lastPos[mod] != peer.getLocalBitField()[peer.getLocalBitField().length - 1]) {
+        int pieces = 19;
+        int mod = pieces % 8;
+        if(lastPos[mod] != b[b.length - 1]) {
             return false;
         }
-        return true;
 
+        return true;
     }
 
 }

@@ -12,17 +12,9 @@ import java.net.Socket;
 //-methods called in the MessageAction and MessageParser classes (and other methods across the classes of interest)
 public class MessageResponse {
 
-
-    public void addToChokedNeighbors(int peerID, int connectedPeerID) {
-        Peer peer = Peer.getPeerByID(peerID);
-        peer.getChoked_neighbors().add(connectedPeerID);
-        peer.getUnchoked_neighbors().remove(connectedPeerID);
-    }
-
     public void addToUnchokedNeighbors(int peerID, int connectPeerID) {
         Peer peer = Peer.getPeerByID(peerID);
         peer.getUnchoked_neighbors().add(connectPeerID);
-        peer.getChoked_neighbors().remove(connectPeerID);
     }
 
 //    public void updateChokeSets(int peerID, int connectedPeerID) {

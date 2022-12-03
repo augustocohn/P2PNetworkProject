@@ -12,9 +12,9 @@ public class BitfieldUtilityTest {
         CommonConfigParser.loadCommonMetaData();
         PeerConfigParser.loadPeerMetaData();
 
-        testUpdateBitField();
+        //testUpdateBitField();
 
-        testPlacePiece();
+        testBitfieldFull();
     }
 
     public static void testUpdateBitField(){
@@ -32,7 +32,23 @@ public class BitfieldUtilityTest {
         System.out.println(Arrays.toString(peer.getLocalBitField()));
     }
 
-    public static void testPlacePiece(){
+    public static void testBitfieldFull(){
+
+        BitFieldUtility bitUtil = new BitFieldUtility();
+
+        byte[] testLastPiece = new byte[] {(byte)0b11111111, (byte)0b11111111, (byte)0b11100000};
+        byte[] testInnerPiece = new byte[] {(byte)0b11011111,(byte)0b11111111, (byte)0b11100000};
+        byte[] testEmpty = new byte[] {(byte)0b00000000, (byte)0b00000000, (byte)0b00000000};
+
+        if(!bitUtil.isBitFieldFull(testLastPiece)){
+            System.out.println("Full last piece broken");
+        }
+        if(bitUtil.isBitFieldFull(testInnerPiece)){
+            System.out.println("Inner piece broken");
+        }
+        if(bitUtil.isBitFieldFull(testEmpty)){
+            System.out.println("Empty broken");
+        }
 
     }
 

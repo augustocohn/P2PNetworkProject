@@ -118,6 +118,10 @@ public class Peer {
         return this.file;
     }
 
+    public Path getFileLocation(){
+        return this.fileLocation;
+    }
+
     public void setFile(byte[] _file){
         this.file = _file;
     }
