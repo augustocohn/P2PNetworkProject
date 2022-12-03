@@ -3,6 +3,7 @@ package peer;
 import messages.MessageResponse;
 import parsers.CommonConfigParser;
 import parsers.PeerConfigParser;
+import utils.BitFieldUtility;
 import utils.Download;
 
 import java.nio.file.Path;
@@ -53,7 +54,6 @@ public class Peer {
     // recalculate after given interval
     // top k are the preferred neighbors
     // if there are any extra neighbors, of those one will be randomly unchoked on given interval
-    private PriorityQueue<Download> priority_neighbors;
     private HashSet<Download> priority_neighbors_set;
 
     // will be NULL if <k preferred neighbors at a given time (will account for in functionality)
@@ -69,7 +69,7 @@ public class Peer {
     private ArrayList<OutgoingConnection> outgoingConnections = new ArrayList<>();
 
     // random generator (variable so "randomness" is not reset)
-    Random random = new Random();
+    public static Random random = new Random();
 
     public int getPeerID() {
         return this.peerID;
@@ -106,8 +106,8 @@ public class Peer {
         return this.interested_neighbors;
     }
 
-    public PriorityQueue<Download> getPriority_neighbors(){
-        return this.priority_neighbors;
+    synchronized public HashSet<Download> getPriority_neighbors(){
+        return this.priority_neighbors_set;
     }
 
     public ArrayList<OutgoingConnection> getOutgoingConnections() {
@@ -202,10 +202,6 @@ public class Peer {
         return this.interested_neighbors;
     }
 
-    synchronized public PriorityQueue<Download> getPriorityNeighbors() {
-        return this.priority_neighbors;
-    }
-
     // for already created and established peerProcesses, connect to them (if bidirectional initiated connections are needed, then change this functionality)
     private void sendValidOutgoingConnections() {
 
@@ -249,85 +245,99 @@ public class Peer {
         System.out.println("Client thread " + this.peerID + " has ended");
 
     }
-
-    synchronized public void calculateUnchokedNeighbors() { // synchronized so that it doesn't cause inconcurrenices
-        //TODO
-        // deconstructs priority queue (or destroys it, whatever)
-        // reconstructs it using calculations via values from previous interval (make sure this calls get interested neighbors bc synchronous)
-        PriorityQueue<Download> neighs = new PriorityQueue<>(this.priority_neighbors_set);
-        this.getUnchoked_neighbors().clear();
-        int count = 0;
-
-        MessageResponse mr = new MessageResponse();
-
-        if(false) {  //TODO return boolean if bitfield is full
-
-            // this peer has a full file, the preferred neighbors are randomly selected
-
-        } else {
-            while (!neighs.isEmpty()) {
-
-                if (count == CommonConfigParser.getCommonMetaData().getNumOfPrefNeighbors()) {
-                    break;
-                }
-
-                Download top = neighs.poll();
-                if (this.getInterested_neighbors().contains(top.getPeerID())) {
-                    mr.addToUnchokedNeighbors(this.peerID, top.getPeerID());
-                    mr.sendUnchokeMessage(this.peerID, top.getPeerID());
-                    count++;
-                }
-            }
-
-            for(Peer p : Peer.getPeers().values()) {
-                if(!this.getUnchoked_neighbors().contains(p)) {
-                    mr.sendChokeMessage(this.peerID, p.getPeerID());
-                }
-            }
-
-        }
-
-    }
-
     // to create functionality here, need to find out how to calculate the download rate for each neighbor
     class UpdatePreferredNeighbors extends TimerTask {
-        public void run() { // this may need to be synchronized but I don't think it does
+        synchronized public void run() { // this may need to be synchronized but I don't think it does
             //System.out.println("preferred neighbors updated for peer " + peerID);
 
             //TODO need functionality to calculate download rate for a given interval to thus update interested neighbors accordingly
             // priority queue that can somehow track the download rate as priority and the IDs as values
 
-            calculateUnchokedNeighbors(); //gotta implement this method to recalculate interested neighbors
+            //TODO
+            // deconstructs priority queue (or destroys it, whatever)
+            // reconstructs it using calculations via values from previous interval (make sure this calls get interested neighbors bc synchronous)
+            PriorityQueue<Download> neighs = new PriorityQueue<>(priority_neighbors_set);
+            getUnchoked_neighbors().clear();
+            int count = 0;
 
+            MessageResponse mr = new MessageResponse();
+
+            BitFieldUtility bitUtil = new BitFieldUtility();
+
+            if(bitUtil.isBitFieldFull(peerID)) {  //if bitfield is full
+
+                // this peer has a full file, the preferred neighbors are randomly selected
+
+                ArrayList<Integer> interested = new ArrayList<>(getInterestedNeighbors());
+
+                int K = CommonConfigParser.getCommonMetaData().getNumOfPrefNeighbors();
+
+                for(int i = 0; i < K; i++) {
+
+                    if(interested.isEmpty()) {
+                        break;
+                    }
+
+                    int index = random.nextInt(interested.size());
+                    int tempInterested = interested.get(index);
+                    interested.remove(index);
+
+                    mr.addToUnchokedNeighbors(peerID, tempInterested);
+                    mr.sendUnchokeMessage(peerID, tempInterested);
+
+                }
+
+
+            } else {
+                while (!neighs.isEmpty()) {
+
+                    if (count == CommonConfigParser.getCommonMetaData().getNumOfPrefNeighbors()) {
+                        break;
+                    }
+
+                    Download top = neighs.poll();
+                    if (getInterested_neighbors().contains(top.getPeerID())) {
+                        mr.addToUnchokedNeighbors(peerID, top.getPeerID());
+                        mr.sendUnchokeMessage(peerID, top.getPeerID());
+                        count++;
+                    }
+                }
+
+                for(Peer p : Peer.getPeers().values()) {
+                    if(!getUnchoked_neighbors().contains(p)) {
+                        mr.sendChokeMessage(peerID, p.getPeerID());
+                    }
+                }
+
+            }
         }
 
     }
 
     class UpdateOptimisticallyUnchokedNeighbor extends TimerTask {
-        public void run() { // this may need to be synchronized but I don't think it does
-            //System.out.println("optimistically unchoked neighbor updated for peer " + peerID);
+        synchronized public void run() { // this may need to be synchronized but I don't think it does
 
-            //TODO remember, this optimistically unchoked neighbor should only exist if: (# of interested neighbors > k) o.w. it should be null
+            PriorityQueue<Download> interested_neighbors_copy = new PriorityQueue<>(priority_neighbors_set);
 
-            // TODO the following code will work once an initialization of the priority queue is correctly implemented
+            int K = CommonConfigParser.getCommonMetaData().getNumOfPrefNeighbors();
 
-//            PriorityQueue<Integer> interested_neighbors_copy = new PriorityQueue<>(getInterestedNeighbors());
-//
-//            int K = CommonConfigParser.get_common_meta_data().get_num_of_pref_neighbors();
-//
-//            for(int count = 0; count < K; count++) {
-//                // conditional for if we have fewer interested neighbors than we do preferred neighbors allowed
-//                if(interested_neighbors_copy.isEmpty()) {
-//                    optimistically_unchoked = null;
-//                    return;
-//                }
-//                interested_neighbors_copy.poll();
-//
-//            }
-//
-//            // randomly select a value from the priority queue (can't one liner this bc size needs to be extracted)
-//            ArrayList<Integer> interested_neighbors_list = new ArrayList<>(interested_neighbors_copy);
-//            optimistically_unchoked = interested_neighbors_list.get(random.nextInt(interested_neighbors_list.size()));
+            for(int count = 0; count < K; count++) {
+                // conditional for if we have fewer interested neighbors than we do preferred neighbors allowed
+                if(interested_neighbors_copy.isEmpty()) {
+                    optimistically_unchoked = null;
+                    return;
+                }
+                interested_neighbors_copy.poll();
+            }
+
+            if(interested_neighbors_copy.isEmpty()) {
+                optimistically_unchoked = null;
+                return;
+            }
+
+            // randomly select a value from the priority queue (can't one liner this bc size needs to be extracted)
+            ArrayList<Download> interested_neighbors_list = new ArrayList<>(interested_neighbors_copy);
+            optimistically_unchoked = interested_neighbors_list.get(random.nextInt(interested_neighbors_list.size())).getPeerID();
 
         }
     }

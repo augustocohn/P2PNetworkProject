@@ -61,6 +61,8 @@ public class MessageParser {
                 mr.updateBitFields(peerID);
                 //send have message to all neighbors
                 mr.sendHaveMessage(peerID, index);
+                //update Downloads priority queue values
+                ma.updateDownloadSpeed(peerID, connectedPeer);
                 break;
 
             default:

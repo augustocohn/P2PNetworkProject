@@ -14,6 +14,9 @@ public final class BitFieldUtility {
     final static byte[] pos = new byte[] {(byte)0b10000000, (byte)0b01000000, (byte)0b00100000, (byte)0b00010000,
             (byte)0b00001000, (byte)0b00000100, (byte)0b00000010, (byte)0b00000001};
 
+    final static byte[] lastPos = new byte[] {(byte)0b10000000, (byte)0b11000000, (byte)0b11100000, (byte)0b11110000,
+            (byte)0b11111000, (byte)0b11111100, (byte)0b11111110, (byte)0b11111111};
+
 
     public void updateBitfield(int peerID, int piece){
         Peer peer = Peer.getPeerByID(peerID);
@@ -69,7 +72,29 @@ public final class BitFieldUtility {
         peer.setFile(buffer.array());
     }
 
+    //TODO TEST THIS
+    public boolean isBitFieldFull(int peerID) {
+        Peer peer = Peer.getPeerByID(peerID);
 
+        byte temp = (byte)(0b11111111);
 
+        //accounts for all parts of the bitfield except the last byte
+        for(int i = 0; i < peer.getLocalBitField().length - 1; i++) {
+
+            byte tempByte = (byte)(temp & peer.getLocalBitField()[i]);
+            if(tempByte != peer.getLocalBitField()[i]) {
+                return false;
+            }
+
+        }
+
+        //account for that last byte
+        int mod = peer.getLocalBitField().length % 8;
+        if(lastPos[mod] != peer.getLocalBitField()[peer.getLocalBitField().length - 1]) {
+            return false;
+        }
+        return true;
+
+    }
 
 }

@@ -18,6 +18,10 @@ public class Download implements Comparable<Download>{
         return this.count;
     }
 
+    public void incrementCount() {
+        this.count++;
+    }
+
     @Override
     public int compareTo(Download other){
         return Integer.compare(other.getCount(), this.getCount());

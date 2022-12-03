@@ -2,6 +2,7 @@ package messages;
 
 import peer.Peer;
 import utils.BitFieldUtility;
+import utils.Download;
 
 public class MessageAction {
 
@@ -48,6 +49,20 @@ public class MessageAction {
     public void updateBitField(int peerID, int index){
         BitFieldUtility bitUtil = new BitFieldUtility();
         bitUtil.updateBitfield(peerID, index);
+    }
+
+    public void updateDownloadSpeed(int peerID, int connectedPeerID) {
+
+        Peer peer = Peer.getPeerByID(peerID);
+        for(Download download : peer.getPriority_neighbors()) {
+            if(download.getPeerID() == connectedPeerID) {
+                download.incrementCount();
+                return;
+            }
+        }
+
+        peer.getPriority_neighbors().add((new Download(connectedPeerID, 1)));
+
     }
 
 
