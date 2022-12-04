@@ -98,9 +98,20 @@ public class MessageResponse {
             if(ogc.getConnectedPeerID() == connectedPeerID){
                 BitFieldUtility bitUtil = new BitFieldUtility();
                 int index = bitUtil.getRequestIndex(peerID, connectedPeerID); //TODO need to test to make sure it is getting a valid request index
+                peer.getRequested_pieces().put(connectedPeerID, index);
                 ogc.sendRequestMessage(index);
             }
         }
+    }
+
+    public void sendAnotherRequest(int peerID, int connectedPeerID) {
+        Peer peer = Peer.getPeerByID(peerID);
+        Peer connectedPeer = Peer.getPeerByID(connectedPeerID);
+
+        if(connectedPeer.getInterestedNeighbors().contains(peerID) && !peer.getChokedby().contains(connectedPeerID)) {
+            sendRequestMessage(peerID, connectedPeerID);
+        }
+
     }
 
 

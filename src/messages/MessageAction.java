@@ -41,9 +41,11 @@ public class MessageAction {
         bitUtil.updateNeighborBitField(peerID, connectedPeerID, piece);
     }
 
-    public void placePiece(int peerID, int index, byte[] piece){
+    public void placePiece(int peerID, int connectedPeerID, byte[] piece){
         BitFieldUtility bitUtil = new BitFieldUtility();
-        bitUtil.placePiece(peerID, index, piece);
+        Peer peer = Peer.getPeerByID(peerID);
+        bitUtil.placePiece(peerID, peer.getRequested_pieces().get(connectedPeerID), piece);
+        peer.getRequested_pieces().remove(connectedPeerID);
     }
 
     public void updateBitField(int peerID, int index){

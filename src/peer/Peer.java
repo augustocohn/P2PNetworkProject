@@ -57,7 +57,7 @@ public class Peer extends Thread{
     private HashSet<Download> priorityNeighborsSet = new HashSet<>();
 
     // will be NULL if <k preferred neighbors at a given time (will account for in functionality)
-    private Integer optimistically_unchoked;
+    private Integer optimistically_unchoked; //TODO implement functionality for this (sending requests if optimistically unchoked timer task)
 
     // tracks whether or not the peer is allowed to close its connections or not
     private static boolean can_close_connection = false;
@@ -134,7 +134,7 @@ public class Peer extends Thread{
             this.bitField[i] = hasFile ? (byte)0b11111111 : (byte)0b00000000;
         }
         BitFieldUtility bitUtil = new BitFieldUtility();
-        this.bitField[this.bitField.length-1] = bitUtil.getLastPos()[calculatePieces()%8];
+        this.bitField[this.bitField.length-1] = hasFile ? bitUtil.getLastPos()[calculatePieces()%8] : (byte)0b00000000;
     }
 
     public Peer(int peerID) {
@@ -281,7 +281,8 @@ public class Peer extends Thread{
             MessageResponse mr = new MessageResponse();
             BitFieldUtility bitUtil = new BitFieldUtility();
             if(peerID == 1001){
-                int x = 0;}
+                int x = 0;
+            }
             if(bitUtil.isBitFieldFull(peerID)) {  //if bitfield is full
 
                 // this peer has a full file, the preferred neighbors are randomly selected

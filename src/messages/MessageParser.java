@@ -49,8 +49,7 @@ public class MessageParser {
             case 7:
                 //piece message | update bitfield
                 //Add content to file
-                index = (ByteBuffer.wrap(message.getMessagePayload())).getInt();
-                ma.placePiece(peerID, index, message.getMessagePayload());
+                ma.placePiece(peerID, connectedPeer, message.getMessagePayload());
                 //Update bitfield
                 ma.updateBitField(peerID, index);
                 //cascade interested/non-interested changes
@@ -59,6 +58,9 @@ public class MessageParser {
                 mr.sendHaveMessage(peerID, index);
                 //update Downloads priority queue values
                 ma.updateDownloadSpeed(peerID, connectedPeer);
+                //send another request message if the correct conditions are met
+                mr.sendAnotherRequest(peerID, connectedPeer);
+
                 break;
 
             default:
