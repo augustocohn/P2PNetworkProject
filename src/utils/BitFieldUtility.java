@@ -171,5 +171,10 @@ public final class BitFieldUtility {
         return indices.get(random.nextInt(indices.size()));
     }
 
+    public int getIndex(int peerID, int connectedPeerID) {
+        Peer peer = Peer.getPeerByID(peerID);
+        return peer.getRequested_pieces().get(connectedPeerID);
+    }
+
 
 }

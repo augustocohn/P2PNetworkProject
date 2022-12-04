@@ -1,5 +1,7 @@
 package messages;
 
+import utils.BitFieldUtility;
+
 import java.nio.ByteBuffer;
 
 public class MessageParser {
@@ -8,6 +10,7 @@ public class MessageParser {
 
         MessageAction ma = new MessageAction();
         MessageResponse mr = new MessageResponse();
+        BitFieldUtility bitUtil = new BitFieldUtility();
         int index = 0;
 
         // parse the message depending on the corresponding message type and forward it to the message action
@@ -48,8 +51,11 @@ public class MessageParser {
 
             case 7:
                 //piece message | update bitfield
+
+                //get index
+                index = bitUtil.getIndex(peerID, connectedPeer);
                 //Add content to file
-                ma.placePiece(peerID, connectedPeer, message.getMessagePayload());
+                ma.placePiece(peerID, connectedPeer, index, message.getMessagePayload());
                 //Update bitfield
                 ma.updateBitField(peerID, index);
                 //cascade interested/non-interested changes
