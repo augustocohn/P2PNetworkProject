@@ -6,10 +6,14 @@ import parsers.CommonConfigParser;
 import peer.Peer;
 
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Random;
 import java.util.stream.Stream;
 
 public final class BitFieldUtility {
+
+    private static Random random = new Random();
 
     final static byte[] pos = new byte[] {(byte)0b10000000, (byte)0b01000000, (byte)0b00100000, (byte)0b00010000,
             (byte)0b00001000, (byte)0b00000100, (byte)0b00000010, (byte)0b00000001};
@@ -123,5 +127,49 @@ public final class BitFieldUtility {
 
         return true;
     }
+
+    //TODO test the next 3 methods, might not work
+    private byte[] desiredBits(int peerID, int connectedPeerID) { //returns array where bits that are 1 are requestable
+        Peer peer = Peer.getPeerByID(peerID);
+        Peer connectedPeer = Peer.getPeerByID(connectedPeerID);
+
+        byte[] peerBitField = peer.getLocalBitField().clone();
+        byte[] connectedPeerBitField = connectedPeer.getLocalBitField().clone();
+
+        byte[] output = new byte[peerBitField.length];
+
+        for(int i = 0; i < peerBitField.length; i++) {
+            output[i] = (byte)((~peerBitField[i]) & (connectedPeerBitField[i]));
+        }
+
+        return output;
+    }
+
+    //TODO need to test
+    private ArrayList<Integer> mapDesiredBits(int peerID, int connectedPeerID) {
+        ArrayList<Integer> list = new ArrayList<>();
+
+        byte[] desiredBits = desiredBits(peerID, connectedPeerID);
+
+        for(int i = 0; i < desiredBits.length; i++) {
+            for(int j = 0; j < pos.length; j++) {
+                byte tempByte = (byte)(pos[j] & desiredBits[i]);
+
+                if(tempByte == pos[j]) {
+                    list.add((i*8) + j);
+                }
+            }
+        }
+
+        return list;
+    }
+
+    //TODO need to test
+    public int getRequestIndex(int peerID, int connectedPeerID) {
+        ArrayList<Integer> indices = mapDesiredBits(peerID, connectedPeerID);
+
+        return indices.get(random.nextInt(indices.size()));
+    }
+
 
 }

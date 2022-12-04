@@ -7,15 +7,21 @@ import java.util.Arrays;
 
 public class BitfieldUtilityTest {
 
-    public static void main(String[] args){
-
-        CommonConfigParser.loadCommonMetaData();
-        PeerConfigParser.loadPeerMetaData();
-
-        //testUpdateBitField();
-
-        testBitfieldFull();
-    }
+//    public static void main(String[] args){
+//
+//        CommonConfigParser.loadCommonMetaData();
+//        PeerConfigParser.loadPeerMetaData();
+//
+//        //testUpdateBitField();
+//
+//        testBitfieldFull();
+//
+//        byte a = (byte)0b11010110;
+//        byte b = (byte)0b00010111;
+//
+//        System.out.println((byte)(b-a));
+//
+//    }
 
     public static void testUpdateBitField(){
         BitFieldUtility bitUtil = new BitFieldUtility();

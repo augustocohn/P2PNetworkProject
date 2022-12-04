@@ -1,11 +1,5 @@
 package messages;
 
-import messages.Message;
-import messages.MessageAction;
-import messages.MessageResponse;
-import peer.Peer;
-import utils.BitFieldUtility;
-
 import java.nio.ByteBuffer;
 
 public class MessageParser {
@@ -23,6 +17,7 @@ public class MessageParser {
                 break;
             case 1:
                 ma.removeFromChokedBy(peerID, connectedPeer);
+                mr.sendRequestMessage(peerID, connectedPeer);
                 break;
 
             case 2:
