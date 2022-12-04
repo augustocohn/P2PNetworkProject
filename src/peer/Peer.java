@@ -5,6 +5,7 @@ import parsers.CommonConfigParser;
 import parsers.PeerConfigParser;
 import utils.BitFieldUtility;
 import utils.Download;
+import utils.FileUtility;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -204,6 +205,26 @@ public class Peer extends Thread{
         return this.interested_neighbors;
     }
 
+    synchronized void checkIfCanClose() {
+        BitFieldUtility bitUtil = new BitFieldUtility();
+
+        Collection<Peer> tempPeers = Peer.getPeers().values();
+
+        for(Peer peer : tempPeers) {
+
+            if(!bitUtil.isBitFieldFull(peer.getPeerID())) {
+                return;
+            }
+        }
+
+        if(Peer.getPeers().size() != 1) {
+            System.out.println("SIZE OF PEERS" + Peer.getPeers().size());
+            System.out.println(can_close_connection);
+            can_close_connection = true;
+        }
+
+    }
+
     // for already created and established peerProcesses, connect to them (if bidirectional initiated connections are needed, then change this functionality)
     private void sendValidOutgoingConnections() {
 
@@ -244,14 +265,26 @@ public class Peer extends Thread{
         UpdateOptimisticallyUnchokedNeighbor updateOptimisticallyUnchokedNeighbor = new UpdateOptimisticallyUnchokedNeighbor();
         timer2.schedule(updateOptimisticallyUnchokedNeighbor, 0, CommonConfigParser.getCommonMetaData().getOptimUnchokingInterval() * 1000L);
 
+        while(!can_close_connection) {
 
-        while(!can_close_connection) {}
+            checkIfCanClose();
+        }
 
         //TODO need an effective way to run these below based on the canCloseConnection boolean to kill the timer tasks
         // UPDATE: may not need to ever kill these timer tasks since I believe that once all user threads terminate, so do the timer tasks
-//        updatePreferredNeighbors.cancel();
-//        updateOptimisticallyUnchokedNeighbor.cancel();
+        updatePreferredNeighbors.cancel();
+        updateOptimisticallyUnchokedNeighbor.cancel();
 
+        if(!PeerConfigParser.getPeerMetaData(peerID).hasFile()) {
+            FileUtility fileUtil = new FileUtility();
+            fileUtil.writeFileArrayToFile(peerID);
+        }
+
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         System.out.println("Client thread " + this.peerID + " has ended");
 
     }
@@ -321,7 +354,7 @@ public class Peer extends Thread{
                 }
 
                 for(Peer p : Peer.getPeers().values()) {
-                    if(!getUnchoked_neighbors().contains(p)) {
+                    if(!getUnchoked_neighbors().contains(p.getPeerID()) && (optimistically_unchoked == null || p.getPeerID() != optimistically_unchoked)) {
                         mr.sendChokeMessage(peerID, p.getPeerID());
                     }
                 }
@@ -334,7 +367,8 @@ public class Peer extends Thread{
     class UpdateOptimisticallyUnchokedNeighbor extends TimerTask {
         synchronized public void run() { // this may need to be synchronized but I don't think it does
 
-            PriorityQueue<Download> interestedNeighborsCopy = new PriorityQueue<>(priorityNeighborsSet);;
+            PriorityQueue<Download> interestedNeighborsCopy = new PriorityQueue<>(priorityNeighborsSet);
+            System.out.println(interestedNeighborsCopy);
 //            if(priorityNeighborsSet != null) {
 //                interestedNeighborsCopy = new PriorityQueue<>(priorityNeighborsSet);
 //            } else {
@@ -360,6 +394,11 @@ public class Peer extends Thread{
             // randomly select a value from the priority queue (can't one liner this bc size needs to be extracted)
             ArrayList<Download> interested_neighbors_list = new ArrayList<>(interestedNeighborsCopy);
             optimistically_unchoked = interested_neighbors_list.get(random.nextInt(interested_neighbors_list.size())).getPeerID();
+
+            MessageResponse mr = new MessageResponse();
+            mr.addToUnchokedNeighbors(peerID, optimistically_unchoked);
+            mr.sendUnchokeMessage(peerID, optimistically_unchoked);
+            System.out.println(peerID + " optimistically unchoked " + optimistically_unchoked);
 
         }
     }

@@ -5,6 +5,7 @@ import peer.Peer;
 
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
+import java.util.Arrays;
 
 public class FileUtility {
 
@@ -18,8 +19,7 @@ public class FileUtility {
             pieceSize = fileSize-offset;
         }
 
-        ByteBuffer buf = ByteBuffer.wrap(peer.getFile(), offset, pieceSize);
-        return buf.array();
+        return Arrays.copyOfRange(peer.getFile(), offset, pieceSize+offset);
     }
 
     public void writeFileArrayToFile(int peerID){

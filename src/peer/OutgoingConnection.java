@@ -7,10 +7,13 @@ import messages.Message;
 import parsers.PeerConfigParser;
 import utils.FileUtility;
 
+import javax.sound.midi.SysexMessage;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.math.BigInteger;
 import java.net.Socket;
+import java.nio.ByteBuffer;
+import java.sql.SQLOutput;
 
 public class OutgoingConnection extends Thread {
 
@@ -80,11 +83,26 @@ public class OutgoingConnection extends Thread {
 
         // once connection is allowed to be closed (boolean will break while loop above), close the outgoing connections
 
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
+        try {
+            portConnection.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
         System.out.println("Outgoing connection thread for " + this.peerID + " has ended");
     }
 
     public byte[] convertIntToByte(int val){
-        return BigInteger.valueOf(val).toByteArray();
+        byte[] temp = new byte[4];
+        ByteBuffer buff = ByteBuffer.wrap(temp);
+        buff.putInt(val);
+        return buff.array();
     }
 
     public void sendChokeMessage(){

@@ -8,9 +8,9 @@ import peer.PeerMetaData;
 
 import java.util.*;
 
-public class StartUp {
+public class StartUp extends Thread{
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
 
         // global read-in/parsing of peer info configuration file
         PeerConfigParser.loadPeerMetaData();
@@ -25,6 +25,7 @@ public class StartUp {
             System.out.println("Adding peer: " + pmd.getPeerID());
             Peer p = new Peer(pmd.getPeerID());
             p.start();
+            Thread.sleep(3000);
         }
 
     }

@@ -117,6 +117,9 @@ public class IncomingConnection extends Thread {
                 // call method - passes peer id as param and returns the boolean memb
                 if(Peer.getCanCloseConnection()) {
                     // SHUT EVERYTHING THE FUCK DOWN (close connection port)
+                    Thread.sleep(50);
+                    portConnection.close();
+                    break;
                 }
 
                 receiveMessage();
@@ -129,6 +132,12 @@ public class IncomingConnection extends Thread {
 
                 processMessage(); // sends message type, length, and payload along with the peerID of the
 
+            }
+
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
             }
 
             System.out.println("Incoming connection thread for " + this.peerID + " has ended");

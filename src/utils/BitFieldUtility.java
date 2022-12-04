@@ -39,7 +39,8 @@ public final class BitFieldUtility {
         Peer peer = Peer.getPeerByID(peerID);
         int index = piece/8;
         int pos_index = piece%8;
-        byte[] updated_bitfield = peer.getNeighborBitFields().get(connectedPeerID);
+//        byte[] updated_bitfield = peer.getNeighborBitFields().get(connectedPeerID);
+        byte[] updated_bitfield = Peer.getPeerByID(connectedPeerID).getLocalBitField().clone();
         updated_bitfield[index] = (byte)((updated_bitfield[index]) | pos[pos_index]);
         peer.getNeighborBitFields().replace(connectedPeerID, updated_bitfield);
     }
@@ -60,7 +61,8 @@ public final class BitFieldUtility {
     public boolean compareBitfield(Peer peer, Peer connectedPeer) {
 
         byte[] peerBitfield = peer.getLocalBitField().clone();
-        byte[] connectedPeerBitfield = peer.getNeighborBitFields().get(connectedPeer.getPeerID());
+//        byte[] connectedPeerBitfield = peer.getNeighborBitFields().get(connectedPeer.getPeerID()).clone();
+        byte[] connectedPeerBitfield = connectedPeer.getLocalBitField().clone();
 
         for(int i = 0; i < peerBitfield.length; i++) {
             byte tempByte = (byte)(peerBitfield[i] | connectedPeerBitfield[i]);
@@ -73,11 +75,12 @@ public final class BitFieldUtility {
     }
 
     public void placePiece(int peerID, int index, byte[] piece){
-        int size = CommonConfigParser.getCommonMetaData().getPieceSize();
         Peer peer = Peer.getPeerByID(peerID);
-        ByteBuffer buffer = ByteBuffer.wrap(peer.getFile());
-        buffer.put(piece, size*index, piece.length);
-        peer.setFile(buffer.array());
+
+        for(int i = 0; i < piece.length; i++) {
+            peer.getFile()[index*CommonConfigParser.getCommonMetaData().getPieceSize() + i] = piece[i];
+        }
+
     }
 
     public boolean isBitFieldFull(int peerID) {

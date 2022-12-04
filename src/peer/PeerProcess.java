@@ -80,6 +80,13 @@ public class PeerProcess extends Thread {
         } catch(Exception e) {
             e.printStackTrace();
         }
+
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
         System.out.println("Server thread " + this.peer_id + " has ended");
     }
 }
