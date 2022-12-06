@@ -25,7 +25,7 @@ public class StartUp extends Thread{
             System.out.println("Adding peer: " + pmd.getPeerID());
             Peer p = new Peer(pmd.getPeerID());
             p.start();
-//            Thread.sleep(3000);
+            Thread.sleep(2000);
         }
 
     }

@@ -32,6 +32,9 @@ public class MessageResponse {
 
     public void updateBitField(int peerID, int connectedPeerID) {
         BitFieldUtility bitUtil = new BitFieldUtility();
+        if(connectedPeerID == 1006){
+            int x = 0;
+        }
         boolean bitFieldDiff = bitUtil.compareBitfield(Peer.getPeerByID(peerID), Peer.getPeerByID(connectedPeerID));
         if(bitFieldDiff) {
             sendNotInterestedMessage(peerID, connectedPeerID);

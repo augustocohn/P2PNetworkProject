@@ -16,18 +16,22 @@ public class MessageParser {
         // parse the message depending on the corresponding message type and forward it to the message action
         switch(message.getMessageType()) {
             case 0:
+                //choke
                 ma.addToChokedBy(peerID, connectedPeer);
                 break;
             case 1:
+                //unchoke
                 ma.removeFromChokedBy(peerID, connectedPeer);
                 mr.sendRequestMessage(peerID, connectedPeer);
                 break;
 
             case 2:
+                //interested
                 ma.addToInterestedNeighbors(peerID, connectedPeer);
                 break;
 
             case 3:
+                //not interested
                 ma.removeFromInterestedNeighbors(peerID, connectedPeer);
                 break;
 
@@ -39,6 +43,10 @@ public class MessageParser {
                 break;
 
             case 5:
+                //bitfield
+                if(connectedPeer == 1006) {
+                    int x = 0;
+                }
                 ma.updateNeighborBitFields(peerID, connectedPeer, message.getMessagePayload());
                 mr.updateBitField(peerID, connectedPeer);
                 break;

@@ -76,6 +76,9 @@ public final class BitFieldUtility {
         Peer peer = Peer.getPeerByID(peerID);
 
         for(int i = 0; i < piece.length; i++) {
+            if(i >= CommonConfigParser.getCommonMetaData().getFileSize()){
+                return;
+            }
             peer.getFile()[index*CommonConfigParser.getCommonMetaData().getPieceSize() + i] = piece[i];
         }
 

@@ -66,6 +66,9 @@ public class OutgoingConnection extends Thread {
             HandshakeMessage hsm = new HandshakeMessage(this.peerID);
             sendMessage(hsm.getByteMessage());
 
+            if(peerID == 1006){
+                int x = 0;
+            }
             //bitfield stuff
             if(PeerConfigParser.getPeerMetaData(peerID).hasFile()) {
                 sendBitfieldMessage(peer);
@@ -153,13 +156,15 @@ public class OutgoingConnection extends Thread {
         sendMessage(message.getByteMessage());
     }
 
-    private void sendMessage(byte[] msg){
+    private void sendMessage(byte[] msg){;
+
         try{
             out.writeObject(msg);
             out.flush();
         }
-        catch(IOException ioException){
-            ioException.printStackTrace();
+        catch(Exception Exception){
+//            Exception.printStackTrace();
+
         }
     }
 
