@@ -62,6 +62,10 @@ public final class BitFieldUtility {
 //        byte[] connectedPeerBitfield = peer.getNeighborBitFields().get(connectedPeer.getPeerID()).clone();
         byte[] connectedPeerBitfield = connectedPeer.getLocalBitField().clone();
 
+        if(connectedPeer.getPeerID() == 1001){
+            int x = 0;
+        }
+
         for(int i = 0; i < peerBitfield.length; i++) {
             byte tempByte = (byte)(peerBitfield[i] | connectedPeerBitfield[i]);
             if(tempByte != peerBitfield[i]) {
@@ -76,7 +80,7 @@ public final class BitFieldUtility {
         Peer peer = Peer.getPeerByID(peerID);
 
         for(int i = 0; i < piece.length; i++) {
-            if(i >= CommonConfigParser.getCommonMetaData().getFileSize()){
+            if(index*CommonConfigParser.getCommonMetaData().getPieceSize() + i >= CommonConfigParser.getCommonMetaData().getFileSize()){
                 return;
             }
             peer.getFile()[index*CommonConfigParser.getCommonMetaData().getPieceSize() + i] = piece[i];

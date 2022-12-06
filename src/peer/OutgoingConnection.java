@@ -156,7 +156,7 @@ public class OutgoingConnection extends Thread {
         sendMessage(message.getByteMessage());
     }
 
-    private void sendMessage(byte[] msg){;
+    void sendMessage(byte[] msg) {;
 
         try{
             out.writeObject(msg);
@@ -164,6 +164,12 @@ public class OutgoingConnection extends Thread {
         }
         catch(Exception Exception){
 //            Exception.printStackTrace();
+            try {
+                Thread.sleep(10);
+            } catch (Exception e) {
+
+            }
+            sendMessage(msg);
 
         }
     }
