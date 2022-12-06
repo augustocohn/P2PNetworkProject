@@ -97,7 +97,10 @@ public class MessageResponse {
         for(OutgoingConnection ogc : peer.getOutgoingConnections()){
             if(ogc.getConnectedPeerID() == connectedPeerID){
                 BitFieldUtility bitUtil = new BitFieldUtility();
-                int index = bitUtil.getRequestIndex(peerID, connectedPeerID); //TODO need to test to make sure it is getting a valid request index
+                Integer index = bitUtil.getRequestIndex(peerID, connectedPeerID); //TODO need to test to make sure it is getting a valid request index
+                if(index == null) {
+                    return;
+                }
                 peer.getRequested_pieces().put(connectedPeerID, index);
                 ogc.sendRequestMessage(index);
             }

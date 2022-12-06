@@ -183,8 +183,12 @@ public final class BitFieldUtility {
     }
 
     //TODO need to test
-    public int getRequestIndex(int peerID, int connectedPeerID) {
+    public Integer getRequestIndex(int peerID, int connectedPeerID) {
         ArrayList<Integer> indices = mapDesiredBits(peerID, connectedPeerID);
+
+        if(indices.isEmpty()) {
+            return null;
+        }
 
         return indices.get(random.nextInt(indices.size()));
     }
