@@ -40,7 +40,7 @@ public class Peer extends Thread{
     // add to when requested a piece
     // check if present when requesting to not re-request
     // remove if choked by a requester
-    // key is piece index, value is peerID
+    // key is peerID, value is index
     private HashMap<Integer, Integer> requested_pieces = new HashMap<>();
 
     // update on given interval
@@ -279,8 +279,8 @@ public class Peer extends Thread{
         updateOptimisticallyUnchokedNeighbor.cancel();
 
         if(!PeerConfigParser.getPeerMetaData(peerID).hasFile()) {
-//            FileUtility fileUtil = new FileUtility();
-//            fileUtil.writeFileArrayToFile(peerID);
+            FileUtility fileUtil = new FileUtility();
+            fileUtil.writeFileArrayToFile(peerID);
         }
 
         try {

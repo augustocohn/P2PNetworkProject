@@ -6,9 +6,7 @@ import parsers.CommonConfigParser;
 import peer.Peer;
 
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Random;
+import java.util.*;
 import java.util.stream.Stream;
 
 public final class BitFieldUtility {
@@ -148,6 +146,16 @@ public final class BitFieldUtility {
         return output;
     }
 
+    boolean hasPieceBeenRequested(int peerID, int ind) {
+        for(Integer index : Peer.getPeerByID(peerID).getRequested_pieces().values()) {
+            if(ind == index) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     //TODO need to test
     private ArrayList<Integer> mapDesiredBits(int peerID, int connectedPeerID) {
         ArrayList<Integer> list = new ArrayList<>();
@@ -159,7 +167,14 @@ public final class BitFieldUtility {
                 byte tempByte = (byte)(pos[j] & desiredBits[i]);
 
                 if(tempByte == pos[j]) {
-                    list.add((i*8) + j);
+                    int ind = (i*8) + j;
+
+                    // check to make sure piece hasn't been requested from another peer before adding
+                    if(hasPieceBeenRequested(peerID, ind)) {
+                        continue;
+                    }
+
+                    list.add(ind);
                 }
             }
         }

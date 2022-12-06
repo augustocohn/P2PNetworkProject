@@ -5,9 +5,9 @@ import java.util.PriorityQueue;
 
 public class DownloadTest {
 
-    public static void main(String[] args) {
-        ensureCorrectPoll();
-    }
+//    public static void main(String[] args) {
+//        ensureCorrectPoll();
+//    }
 
     public static void ensureCorrectPoll() {
 
