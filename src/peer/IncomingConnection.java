@@ -118,6 +118,7 @@ public class IncomingConnection extends Thread {
                 if(Peer.getCanCloseConnection()) {
                     // SHUT EVERYTHING THE FUCK DOWN (close connection port)
                     Thread.sleep(50);
+                    inputStream.close();
                     portConnection.close();
                     break;
                 }
@@ -135,7 +136,7 @@ public class IncomingConnection extends Thread {
             }
 
             try {
-                Thread.sleep(1000);
+                Thread.sleep(200);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }

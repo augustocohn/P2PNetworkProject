@@ -73,7 +73,7 @@ public class PeerProcess extends Thread {
             while(!Peer.getCanCloseConnection()) {
                 // process the messages incoming - or do something to keep thread alive, or do we have to, I actually don't think we want this
                 // we actually may want the thread to close so that the rest of the run() method in Peer runs (I think this is the case)
-
+                Thread.sleep(50);
             }
 
 
@@ -82,12 +82,19 @@ public class PeerProcess extends Thread {
         }
 
         try {
-            Thread.sleep(1000);
+            Thread.sleep(200);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
 
+        try {
+            serverSocket.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
         System.out.println("Server thread " + this.peer_id + " has ended");
+
     }
 }
 

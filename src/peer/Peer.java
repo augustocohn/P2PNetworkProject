@@ -84,7 +84,7 @@ public class Peer extends Thread{
         this.bitField = _bitField;
     }
 
-    public static HashMap<Integer, Peer> getPeers(){
+    synchronized public static HashMap<Integer, Peer> getPeers(){
         return peers;
     }
 
@@ -210,9 +210,8 @@ public class Peer extends Thread{
 
         Collection<Peer> tempPeers = Peer.getPeers().values();
 
-        for(Peer peer : tempPeers) {
-
-            if(!bitUtil.isBitFieldFull(peer.getPeerID())) {
+        for (Peer tempPeer : tempPeers) {
+            if (!bitUtil.isBitFieldFull(tempPeer.getPeerID())) {
                 return;
             }
         }
@@ -266,8 +265,12 @@ public class Peer extends Thread{
         timer2.schedule(updateOptimisticallyUnchokedNeighbor, 0, CommonConfigParser.getCommonMetaData().getOptimUnchokingInterval() * 1000L);
 
         while(!can_close_connection) {
-
             checkIfCanClose();
+            try {
+                Thread.sleep(50);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
         }
 
         //TODO need an effective way to run these below based on the canCloseConnection boolean to kill the timer tasks
@@ -276,12 +279,12 @@ public class Peer extends Thread{
         updateOptimisticallyUnchokedNeighbor.cancel();
 
         if(!PeerConfigParser.getPeerMetaData(peerID).hasFile()) {
-            FileUtility fileUtil = new FileUtility();
-            fileUtil.writeFileArrayToFile(peerID);
+//            FileUtility fileUtil = new FileUtility();
+//            fileUtil.writeFileArrayToFile(peerID);
         }
 
         try {
-            Thread.sleep(1000);
+            Thread.sleep(400);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
@@ -292,6 +295,10 @@ public class Peer extends Thread{
     class UpdatePreferredNeighbors extends TimerTask {
         synchronized public void run() { // this may need to be synchronized but I don't think it does
             //System.out.println("preferred neighbors updated for peer " + peerID);
+
+            if(can_close_connection) {
+                return;
+            }
 
             //TODO need functionality to calculate download rate for a given interval to thus update interested neighbors accordingly
             // priority queue that can somehow track the download rate as priority and the IDs as values
@@ -313,9 +320,7 @@ public class Peer extends Thread{
 
             MessageResponse mr = new MessageResponse();
             BitFieldUtility bitUtil = new BitFieldUtility();
-            if(peerID == 1001){
-                int x = 0;
-            }
+
             if(bitUtil.isBitFieldFull(peerID)) {  //if bitfield is full
 
                 // this peer has a full file, the preferred neighbors are randomly selected
@@ -366,6 +371,10 @@ public class Peer extends Thread{
 
     class UpdateOptimisticallyUnchokedNeighbor extends TimerTask {
         synchronized public void run() { // this may need to be synchronized but I don't think it does
+
+            if(can_close_connection) {
+                return;
+            }
 
             PriorityQueue<Download> interestedNeighborsCopy = new PriorityQueue<>(priorityNeighborsSet);
             System.out.println(interestedNeighborsCopy);

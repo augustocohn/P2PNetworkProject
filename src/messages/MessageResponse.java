@@ -107,8 +107,10 @@ public class MessageResponse {
     public void sendAnotherRequest(int peerID, int connectedPeerID) {
         Peer peer = Peer.getPeerByID(peerID);
         Peer connectedPeer = Peer.getPeerByID(connectedPeerID);
+        BitFieldUtility bitUtil = new BitFieldUtility();
 
-        if(connectedPeer.getInterestedNeighbors().contains(peerID) && !peer.getChokedby().contains(connectedPeerID)) {
+        //condition should ensure the bitfield is not full
+        if(!bitUtil.isBitFieldFull(peerID) && connectedPeer.getInterestedNeighbors().contains(peerID) && !peer.getChokedby().contains(connectedPeerID)) {
             sendRequestMessage(peerID, connectedPeerID);
         }
 

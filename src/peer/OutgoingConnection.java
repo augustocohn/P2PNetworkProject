@@ -78,24 +78,30 @@ public class OutgoingConnection extends Thread {
         // while connection is open, do some periodic messaging
         while(!Peer.getCanCloseConnection()) {
             //do periodic communcications
-
+            try {
+                Thread.sleep(50);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
         }
 
         // once connection is allowed to be closed (boolean will break while loop above), close the outgoing connections
 
         try {
-            Thread.sleep(1000);
+            Thread.sleep(10);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
 
         try {
+            out.close();
             portConnection.close();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
         System.out.println("Outgoing connection thread for " + this.peerID + " has ended");
+
     }
 
     public byte[] convertIntToByte(int val){
