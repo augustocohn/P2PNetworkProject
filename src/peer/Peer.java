@@ -404,12 +404,16 @@ public class Peer extends Thread{
 
             // randomly select a value from the priority queue (can't one liner this bc size needs to be extracted)
             ArrayList<Download> interested_neighbors_list = new ArrayList<>(interestedNeighborsCopy);
+            Integer optimistically_unchoked_prior = optimistically_unchoked;
             optimistically_unchoked = interested_neighbors_list.get(random.nextInt(interested_neighbors_list.size())).getPeerID();
 
-            MessageResponse mr = new MessageResponse();
-            mr.addToUnchokedNeighbors(peerID, optimistically_unchoked);
-            mr.sendUnchokeMessage(peerID, optimistically_unchoked);
-            System.out.println(peerID + " optimistically unchoked " + optimistically_unchoked);
+            // if they're the same, then don't resend redundant unchoke message
+            if(optimistically_unchoked_prior == null || !optimistically_unchoked_prior.equals(optimistically_unchoked)) {
+                MessageResponse mr = new MessageResponse();
+                mr.addToUnchokedNeighbors(peerID, optimistically_unchoked);
+                mr.sendUnchokeMessage(peerID, optimistically_unchoked);
+                System.out.println(peerID + " optimistically unchoked " + optimistically_unchoked);
+            }
 
         }
     }
