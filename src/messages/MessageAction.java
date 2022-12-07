@@ -51,6 +51,7 @@ public class MessageAction {
         Peer peer = Peer.getPeerByID(peerID);
         bitUtil.placePiece(peerID, index, piece);
         peer.getRequested_pieces().remove(connectedPeerID);
+        peer.
     }
 
     public void updateBitField(int peerID, int index){

@@ -1,5 +1,6 @@
 package peer;
 
+import logger.Logger;
 import messages.MessageResponse;
 import parsers.CommonConfigParser;
 import parsers.PeerConfigParser;
@@ -20,6 +21,11 @@ public class Peer extends Thread{
 
     // current peer's port number
     private int port_num;
+
+    // logger to write log files for each peer
+    private Logger logger;
+
+    private int pieceCount;
 
     // should we have a static hashmap of ID's to servers so a getinstance method by ID will allow for the returning of the correct thread/object
     private static HashMap<Integer, Peer> peers = new HashMap<>();
@@ -57,6 +63,9 @@ public class Peer extends Thread{
     // if there are any extra neighbors, of those one will be randomly unchoked on given interval
     private HashSet<Download> priorityNeighborsSet = new HashSet<>();
 
+    // for logger functionality
+    private HashSet<Integer> preferredNeighbors = new HashSet<>();
+
     // will be NULL if <k preferred neighbors at a given time (will account for in functionality)
     private Integer optimistically_unchoked; //TODO implement functionality for this (sending requests if optimistically unchoked timer task)
 
@@ -80,6 +89,18 @@ public class Peer extends Thread{
         return this.bitField;
     }
 
+    public int getPieceCount() {
+        return this.pieceCount;
+    }
+
+    public void incrementPieceCount() {
+        this.pieceCount++;
+    }
+
+    public Integer getOptimistically_unchoked() {
+        return optimistically_unchoked;
+    }
+
     public void setLocalBitField(byte[] _bitField){
         this.bitField = _bitField;
     }
@@ -94,6 +115,10 @@ public class Peer extends Thread{
 
     public HashMap<Integer, Integer> getRequested_pieces(){
         return this.requested_pieces;
+    }
+
+    public ArrayList<Integer> getPreferredNeighbors() {
+        return new ArrayList<>(this.preferredNeighbors);
     }
 
     public HashSet<Integer> getChokedby(){
@@ -118,6 +143,10 @@ public class Peer extends Thread{
 
     public Path getFileLocation(){
         return this.fileLocation;
+    }
+
+    public Logger getLogger() {
+        return this.logger;
     }
 
     public void setFile(byte[] _file){
@@ -146,6 +175,8 @@ public class Peer extends Thread{
         this.fileLocation = Paths.get(System.getProperty("user.dir") + "\\" + peerID + "\\" + fileName);
         boolean hasFile = PeerConfigParser.getPeerMetaData(peerID).hasFile();
 
+        this.logger = new Logger(this.peerID);
+
         initializeBitField(hasFile, calculatePieces());
 
         //TODO Initialize file[] to proper size
@@ -153,10 +184,13 @@ public class Peer extends Thread{
 
         if(hasFile){
             try {
+                pieceCount = calculatePieces();
                 file = Files.readAllBytes(this.fileLocation);
             } catch (Exception e){
                 System.out.println("CANNOT READ FILE");
             }
+        } else {
+            pieceCount = 0;
         }
 
     }
@@ -306,6 +340,8 @@ public class Peer extends Thread{
             MessageResponse mr = new MessageResponse();
             BitFieldUtility bitUtil = new BitFieldUtility();
 
+            preferredNeighbors.clear();
+
             if(bitUtil.isBitFieldFull(peerID)) {  //if bitfield is full
 
                 // this peer has a full file, the preferred neighbors are randomly selected
@@ -325,6 +361,7 @@ public class Peer extends Thread{
                     interested.remove(index);
 
                     mr.addToUnchokedNeighbors(peerID, tempInterested);
+                    preferredNeighbors.add(tempInterested);
                     if(optimistically_unchoked == null || tempInterested != optimistically_unchoked) {
                         mr.sendUnchokeMessage(peerID, tempInterested);
                     }
@@ -340,6 +377,7 @@ public class Peer extends Thread{
                     Download top = neighs.poll();
                     if (getInterestedNeighbors().contains(top.getPeerID())) {
                         mr.addToUnchokedNeighbors(peerID, top.getPeerID());
+                        preferredNeighbors.add(top.getPeerID());
                         if(optimistically_unchoked == null || top.getPeerID() != optimistically_unchoked) {
                             mr.sendUnchokeMessage(peerID, top.getPeerID());
                         }

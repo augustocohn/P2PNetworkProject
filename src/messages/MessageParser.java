@@ -1,5 +1,6 @@
 package messages;
 
+import peer.Peer;
 import utils.BitFieldUtility;
 
 import java.nio.ByteBuffer;
@@ -20,21 +21,25 @@ public class MessageParser {
                 ma.addToChokedBy(peerID, connectedPeer);
                 //remove any potentially requested pieces so it can be re-requested
                 ma.removeFromRequested(peerID, connectedPeer); //TODO not sure if this does anything, but trying to fix null index problem
+                Peer.getPeerByID(peerID).getLogger().chokeByLog(connectedPeer);
                 break;
             case 1:
                 //unchoke
                 ma.removeFromChokedBy(peerID, connectedPeer);
                 mr.sendRequestMessage(peerID, connectedPeer);
+                Peer.getPeerByID(peerID).getLogger().unchokeByLog(connectedPeer);
                 break;
 
             case 2:
                 //interested
                 ma.addToInterestedNeighbors(peerID, connectedPeer);
+                Peer.getPeerByID(peerID).getLogger().receiveInterestedLog(connectedPeer);
                 break;
 
             case 3:
                 //not interested
                 ma.removeFromInterestedNeighbors(peerID, connectedPeer);
+                Peer.getPeerByID(peerID).getLogger().receiveNotInterestedLog(connectedPeer);
                 break;
 
             case 4:
@@ -42,13 +47,11 @@ public class MessageParser {
                 index = (ByteBuffer.wrap(message.getMessagePayload())).getInt();
                 ma.updateNeighborBitField(peerID, connectedPeer, index);
                 mr.updateBitField(peerID, connectedPeer);
+                Peer.getPeerByID(peerID).getLogger().receiveHaveLog(connectedPeer, index);
                 break;
 
             case 5:
                 //bitfield
-                if(connectedPeer == 1006) {
-                    int x = 0;
-                }
                 ma.updateNeighborBitFields(peerID, connectedPeer, message.getMessagePayload());
                 mr.updateBitField(peerID, connectedPeer);
                 break;
@@ -71,6 +74,9 @@ public class MessageParser {
                 index = tempInd;
                 //Add content to file
                 ma.placePiece(peerID, connectedPeer, index, message.getMessagePayload());
+
+                Peer.getPeerByID(peerID).getLogger().downloadPieceFromLog(connectedPeer, index, Peer.getPeerByID(peerID).getPieceCount());
+
                 //Update bitfield
                 ma.updateBitField(peerID, index);
                 //cascade interested/non-interested changes
