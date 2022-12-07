@@ -340,7 +340,9 @@ public class Peer extends Thread{
                     interested.remove(index);
 
                     mr.addToUnchokedNeighbors(peerID, tempInterested);
-                    mr.sendUnchokeMessage(peerID, tempInterested);
+                    if(optimistically_unchoked == null || tempInterested != optimistically_unchoked) {
+                        mr.sendUnchokeMessage(peerID, tempInterested);
+                    }
 
                 }
             } else {
@@ -353,7 +355,7 @@ public class Peer extends Thread{
                     Download top = neighs.poll();
                     if (getInterestedNeighbors().contains(top.getPeerID())) {
                         mr.addToUnchokedNeighbors(peerID, top.getPeerID());
-                        if(top.getPeerID() != optimistically_unchoked) {
+                        if(optimistically_unchoked == null || top.getPeerID() != optimistically_unchoked) {
                             mr.sendUnchokeMessage(peerID, top.getPeerID());
                         }
                         count++;
