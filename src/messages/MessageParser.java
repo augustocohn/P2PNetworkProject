@@ -18,6 +18,8 @@ public class MessageParser {
             case 0:
                 //choke
                 ma.addToChokedBy(peerID, connectedPeer);
+                //remove any potentially requested pieces so it can be re-requested
+                ma.removeFromRequested(peerID, connectedPeer); //TODO not sure if this does anything, but trying to fix null index problem
                 break;
             case 1:
                 //unchoke

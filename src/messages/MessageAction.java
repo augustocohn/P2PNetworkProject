@@ -31,6 +31,11 @@ public class MessageAction {
         peer.getInterestedNeighbors().remove(connectedPeerID);
     }
 
+    public void removeFromRequested(int peerID, int connectedPeerID) {
+        Peer peer = Peer.getPeerByID(peerID);
+        peer.getRequested_pieces().remove(connectedPeerID);
+    }
+
     public void updateNeighborBitFields(int peerID, int connectedPeerID, byte[] bitfield){
         Peer peer = Peer.getPeerByID(peerID);
         peer.getNeighborBitFields().put(connectedPeerID, bitfield);

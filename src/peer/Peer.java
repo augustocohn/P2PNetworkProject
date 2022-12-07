@@ -282,7 +282,7 @@ public class Peer extends Thread{
         }
 
         try {
-            Thread.sleep(400);
+            Thread.sleep(600);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }

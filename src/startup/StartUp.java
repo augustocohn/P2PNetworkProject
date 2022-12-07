@@ -6,12 +6,9 @@ import parsers.PeerConfigParser;
 import peer.Peer;
 import peer.PeerMetaData;
 
-import java.util.*;
-
 public class StartUp extends Thread{
 
-    public static void main(String[] args) throws InterruptedException {
-
+    public void run() {
         // global read-in/parsing of peer info configuration file
         PeerConfigParser.loadPeerMetaData();
         //ArrayList<PeerMetaData> peersMetaData = PeerConfigParser.getPeersMetaData();
@@ -25,9 +22,19 @@ public class StartUp extends Thread{
             System.out.println("Adding peer: " + pmd.getPeerID());
             Peer p = new Peer(pmd.getPeerID());
             p.start();
-            Thread.sleep(2000);
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
-
+        try {
+            Thread.sleep(20000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        //to kill the JVM and administrative threads that are created with the complex threading in occurrence
+        java.lang.System.exit(0);
     }
 
 }
