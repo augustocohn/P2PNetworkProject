@@ -61,7 +61,12 @@ public class MessageParser {
                 //piece message | update bitfield
 
                 //get index
-                index = bitUtil.getIndex(peerID, connectedPeer);
+                Integer tempInd;
+                tempInd = bitUtil.getIndex(peerID, connectedPeer);
+                if(tempInd == null) {
+                    break;
+                }
+                index = tempInd;
                 //Add content to file
                 ma.placePiece(peerID, connectedPeer, index, message.getMessagePayload());
                 //Update bitfield

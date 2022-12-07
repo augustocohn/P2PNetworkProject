@@ -99,6 +99,7 @@ public class MessageResponse {
                 BitFieldUtility bitUtil = new BitFieldUtility();
                 Integer index = bitUtil.getRequestIndex(peerID, connectedPeerID); //TODO need to test to make sure it is getting a valid request index
                 if(index == null) {
+                    System.out.println("null index in send request message");
                     return;
                 }
                 peer.getRequested_pieces().put(connectedPeerID, index);

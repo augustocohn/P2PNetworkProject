@@ -217,8 +217,6 @@ public class Peer extends Thread{
         }
 
         if(Peer.getPeers().size() != 1) {
-            System.out.println("SIZE OF PEERS" + Peer.getPeers().size());
-            System.out.println(can_close_connection);
             can_close_connection = true;
         }
 
@@ -299,19 +297,6 @@ public class Peer extends Thread{
             if(can_close_connection) {
                 return;
             }
-
-            //TODO need functionality to calculate download rate for a given interval to thus update interested neighbors accordingly
-            // priority queue that can somehow track the download rate as priority and the IDs as values
-
-            //TODO
-            // deconstructs priority queue (or destroys it, whatever)
-            // reconstructs it using calculations via values from previous interval (make sure this calls get interested neighbors bc synchronous)
-//            PriorityQueue<Download> neighs;
-//            if(priorityNeighborsSet != null) {
-//                neighs = new PriorityQueue<>(priorityNeighborsSet);
-//            } else {
-//                neighs = new PriorityQueue<>();
-//            }
 
             PriorityQueue<Download> neighs = new PriorityQueue<>(priorityNeighborsSet);
 

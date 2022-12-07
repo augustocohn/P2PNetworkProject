@@ -177,9 +177,10 @@ public final class BitFieldUtility {
                     int ind = (i*8) + j;
 
                     // check to make sure piece hasn't been requested from another peer before adding
-                    if(hasPieceBeenRequested(peerID, ind)) {
-                        continue;
-                    }
+                    //TODO figure this out: this present causes null indices, if not present then null ptr exception in getIndex() in this class
+//                    if(hasPieceBeenRequested(peerID, ind)) {
+//                        continue;
+//                    }
 
                     list.add(ind);
                 }
@@ -200,9 +201,14 @@ public final class BitFieldUtility {
         return indices.get(random.nextInt(indices.size()));
     }
 
-    public int getIndex(int peerID, int connectedPeerID) {
-        Peer peer = Peer.getPeerByID(peerID);
-        return peer.getRequested_pieces().get(connectedPeerID);
+    public Integer getIndex(int peerID, int connectedPeerID) {
+        try {
+            Peer peer = Peer.getPeerByID(peerID);
+            return peer.getRequested_pieces().get(connectedPeerID);
+        } catch (NullPointerException e) {
+            System.out.println("Get index yields nullptr");
+        }
+        return null;
     }
 
 
