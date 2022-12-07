@@ -13,6 +13,8 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.nio.file.Files;
 
+import static parsers.CommonConfigParser.getCommonMetaData;
+
 
 public class Peer extends Thread{
 
@@ -181,8 +183,8 @@ public class Peer extends Thread{
         this.peerID = peerID;
         peers.put(peerID, this);
 
-        String fileName = CommonConfigParser.getCommonMetaData().getFileName();
-        this.fileLocation = Paths.get(System.getProperty("user.dir") + "\\" + peerID + "\\" + fileName);
+        String fileName = getCommonMetaData().getFileName();
+        this.fileLocation = Paths.get(System.getProperty("user.dir") + "\\peer_" + peerID + "\\" + fileName);
         this.hasFile = PeerConfigParser.getPeerMetaData(peerID).hasFile();
 
         this.logger = new Logger(this.peerID);
@@ -190,7 +192,7 @@ public class Peer extends Thread{
         initializeBitField(this.hasFile, calculatePieces());
 
         //TODO Initialize file[] to proper size
-        file = new byte[CommonConfigParser.getCommonMetaData().getFileSize()];
+        file = new byte[getCommonMetaData().getFileSize()];
 
         if(this.hasFile){
             try {
@@ -206,8 +208,8 @@ public class Peer extends Thread{
     }
 
     public static int calculatePieces(){
-        int fileSize = CommonConfigParser.getCommonMetaData().getFileSize();
-        int pieceSize = CommonConfigParser.getCommonMetaData().getPieceSize();
+        int fileSize = getCommonMetaData().getFileSize();
+        int pieceSize = getCommonMetaData().getPieceSize();
 
         if(fileSize % pieceSize != 0){
             return (fileSize / pieceSize) + 1;
@@ -297,14 +299,20 @@ public class Peer extends Thread{
         }
 
         // updates preferred neighbors
-        Timer timer1 = new Timer();
-        UpdatePreferredNeighbors updatePreferredNeighbors = new UpdatePreferredNeighbors();
-        timer1.schedule(updatePreferredNeighbors, 0, CommonConfigParser.getCommonMetaData().getUnchokingInterval() * 1000L);
+//        Timer timer1 = new Timer();
+//        UpdatePreferredNeighbors updatePreferredNeighbors = new UpdatePreferredNeighbors();
+//        timer1.schedule(updatePreferredNeighbors, 0, getCommonMetaData().getUnchokingInterval() * 1000L);
+
+        UpdatePreferredNeighbors updatePreferredNeighbors_thread = new UpdatePreferredNeighbors();
+        updatePreferredNeighbors_thread.start();
 
         // updates optimistically unchoked neighbor
-        Timer timer2 = new Timer();
-        UpdateOptimisticallyUnchokedNeighbor updateOptimisticallyUnchokedNeighbor = new UpdateOptimisticallyUnchokedNeighbor();
-        timer2.schedule(updateOptimisticallyUnchokedNeighbor, 0, CommonConfigParser.getCommonMetaData().getOptimUnchokingInterval() * 1000L);
+//        Timer timer2 = new Timer();
+//        UpdateOptimisticallyUnchokedNeighbor updateOptimisticallyUnchokedNeighbor = new UpdateOptimisticallyUnchokedNeighbor();
+//        timer2.schedule(updateOptimisticallyUnchokedNeighbor, 0, getCommonMetaData().getOptimUnchokingInterval() * 1000L);
+
+        UpdateOptimisticallyUnchokedNeighbor updateOptimisticallyUnchokedNeighbor_thread = new UpdateOptimisticallyUnchokedNeighbor();
+        updateOptimisticallyUnchokedNeighbor_thread.start();
 
         while(!can_close_connection) {
             checkIfCanClose();
@@ -317,8 +325,8 @@ public class Peer extends Thread{
 
         //TODO need an effective way to run these below based on the canCloseConnection boolean to kill the timer tasks
         // UPDATE: may not need to ever kill these timer tasks since I believe that once all user threads terminate, so do the timer tasks
-        updatePreferredNeighbors.cancel();
-        updateOptimisticallyUnchokedNeighbor.cancel();
+//        updatePreferredNeighbors.cancel();
+//        updateOptimisticallyUnchokedNeighbor.cancel();
 
         if(!PeerConfigParser.getPeerMetaData(peerID).hasFile()) {
             FileUtility fileUtil = new FileUtility();
@@ -337,124 +345,147 @@ public class Peer extends Thread{
 
     }
     // to create functionality here, need to find out how to calculate the download rate for each neighbor
-    class UpdatePreferredNeighbors extends TimerTask {
+    class UpdatePreferredNeighbors extends Thread {
         public void run() { // this may need to be synchronized but I don't think it does
             //System.out.println("preferred neighbors updated for peer " + peerID);
 
-            if(can_close_connection) {
-                return;
+            try {
+                Thread.sleep(CommonConfigParser.getCommonMetaData().getUnchokingInterval() * 1000L);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
 
-            PriorityQueue<Download> neighs = new PriorityQueue<>(priorityNeighborsSet);
+            while(!can_close_connection) {
 
-            getUnchoked_neighbors().clear();
-            int count = 0;
-
-            MessageResponse mr = new MessageResponse();
-            BitFieldUtility bitUtil = new BitFieldUtility();
-
-            preferredNeighbors.clear();
-
-            if(hasCompleteFile()) {  //if bitfield is full
-
-                // this peer has a full file, the preferred neighbors are randomly selected
-
-                ArrayList<Integer> interested = new ArrayList<>(getInterestedNeighbors());
-
-                int K = CommonConfigParser.getCommonMetaData().getNumOfPrefNeighbors();
-
-                for(int i = 0; i < K; i++) {
-
-                    if(interested.isEmpty()) {
-                        break;
-                    }
-
-                    int index = random.nextInt(interested.size());
-                    int tempInterested = interested.get(index);
-                    interested.remove(index);
-
-                    mr.addToUnchokedNeighbors(peerID, tempInterested);
-                    preferredNeighbors.add(tempInterested);
-                    if(optimistically_unchoked == null || tempInterested != optimistically_unchoked && !Peer.getPeerByID(tempInterested).hasCompleteFile()) {
-                        mr.sendUnchokeMessage(peerID, tempInterested);
-                    }
-
+                try {
+                    Thread.sleep(CommonConfigParser.getCommonMetaData().getUnchokingInterval() * 1000L);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
-            } else {
-                while (!neighs.isEmpty()) {
 
-                    if (count == CommonConfigParser.getCommonMetaData().getNumOfPrefNeighbors()) {
-                        break;
-                    }
+                System.out.println("Running preferred neighbors");
 
-                    Download top = neighs.poll();
-                    if (getInterestedNeighbors().contains(top.getPeerID())) {
-                        mr.addToUnchokedNeighbors(peerID, top.getPeerID());
-                        preferredNeighbors.add(top.getPeerID());
-                        if(optimistically_unchoked == null || top.getPeerID() != optimistically_unchoked) {
-                            mr.sendUnchokeMessage(peerID, top.getPeerID());
+                PriorityQueue<Download> neighs = new PriorityQueue<>(priorityNeighborsSet);
+
+                getUnchoked_neighbors().clear();
+                int count = 0;
+
+                MessageResponse mr = new MessageResponse();
+                BitFieldUtility bitUtil = new BitFieldUtility();
+
+                preferredNeighbors.clear();
+
+                if (hasCompleteFile()) {  //if bitfield is full
+
+                    // this peer has a full file, the preferred neighbors are randomly selected
+
+                    ArrayList<Integer> interested = new ArrayList<>(getInterestedNeighbors());
+
+                    int K = getCommonMetaData().getNumOfPrefNeighbors();
+
+                    for (int i = 0; i < K; i++) {
+
+                        if (interested.isEmpty()) {
+                            break;
                         }
-                        count++;
-                    }
-                }
 
-                for(Peer p : Peer.getPeers().values()) {
-                    if(!getUnchoked_neighbors().contains(p.getPeerID()) && (optimistically_unchoked == null || p.getPeerID() != optimistically_unchoked)) {
-                        mr.sendChokeMessage(peerID, p.getPeerID());
+                        int index = random.nextInt(interested.size());
+                        int tempInterested = interested.get(index);
+                        interested.remove(index);
+
+                        mr.addToUnchokedNeighbors(peerID, tempInterested);
+                        preferredNeighbors.add(tempInterested);
+                        if (optimistically_unchoked == null || tempInterested != optimistically_unchoked && !Peer.getPeerByID(tempInterested).hasCompleteFile()) {
+                            mr.sendUnchokeMessage(peerID, tempInterested);
+                        }
+
                     }
+                    logger.changePreferredNeighborsLog();
+                } else {
+                    while (!neighs.isEmpty()) {
+
+                        if (count == getCommonMetaData().getNumOfPrefNeighbors()) {
+                            break;
+                        }
+
+                        Download top = neighs.poll();
+                        if (getInterestedNeighbors().contains(top.getPeerID())) {
+                            mr.addToUnchokedNeighbors(peerID, top.getPeerID());
+                            preferredNeighbors.add(top.getPeerID());
+                            if (optimistically_unchoked == null || top.getPeerID() != optimistically_unchoked) {
+                                mr.sendUnchokeMessage(peerID, top.getPeerID());
+                            }
+                            count++;
+                        }
+                    }
+
+                    for (Peer p : Peer.getPeers().values()) {
+                        if (!getUnchoked_neighbors().contains(p.getPeerID()) && (optimistically_unchoked == null || p.getPeerID() != optimistically_unchoked)) {
+                            mr.sendChokeMessage(peerID, p.getPeerID());
+                        }
+                    }
+                    logger.changePreferredNeighborsLog();
                 }
 
             }
-            logger.changePreferredNeighborsLog();
         }
 
     }
 
-    class UpdateOptimisticallyUnchokedNeighbor extends TimerTask {
+    class UpdateOptimisticallyUnchokedNeighbor extends Thread {
         public void run() { // this may need to be synchronized but I don't think it does
 
-            if(can_close_connection) {
-                return;
+            try {
+                Thread.sleep(CommonConfigParser.getCommonMetaData().getUnchokingInterval() * 1000L);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
+            while(!can_close_connection) {
 
-            PriorityQueue<Download> interestedNeighborsCopy = new PriorityQueue<>(priorityNeighborsSet);
-            System.out.println(interestedNeighborsCopy);
-//            if(priorityNeighborsSet != null) {
-//                interestedNeighborsCopy = new PriorityQueue<>(priorityNeighborsSet);
-//            } else {
-//                interestedNeighborsCopy = new PriorityQueue<>();
-//            }
+                try {
+                    Thread.sleep(CommonConfigParser.getCommonMetaData().getOptimUnchokingInterval() * 1000L);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
 
-            int K = CommonConfigParser.getCommonMetaData().getNumOfPrefNeighbors();
+                System.out.println("Running optim unchoke neighbor");
 
-            for(int count = 0; count < K; count++) {
-                // conditional for if we have fewer interested neighbors than we do preferred neighbors allowed
-                if(interestedNeighborsCopy.isEmpty()) {
+                PriorityQueue<Download> interestedNeighborsCopy = new PriorityQueue<>(priorityNeighborsSet);
+                System.out.println(interestedNeighborsCopy);
+
+                int K = getCommonMetaData().getNumOfPrefNeighbors();
+
+                for (int count = 0; count < K; count++) {
+                    // conditional for if we have fewer interested neighbors than we do preferred neighbors allowed
+                    if (interestedNeighborsCopy.isEmpty()) {
+                        optimistically_unchoked = null;
+                        logger.changeOptimisticallyUnchokedLog();
+                        return;
+                    }
+                    interestedNeighborsCopy.poll();
+                }
+
+                if (interestedNeighborsCopy.isEmpty()) {
                     optimistically_unchoked = null;
+                    logger.changeOptimisticallyUnchokedLog();
                     return;
                 }
-                interestedNeighborsCopy.poll();
-            }
 
-            if(interestedNeighborsCopy.isEmpty()) {
-                optimistically_unchoked = null;
-                return;
-            }
-
-            // randomly select a value from the priority queue (can't one liner this bc size needs to be extracted)
-            ArrayList<Download> interested_neighbors_list = new ArrayList<>(interestedNeighborsCopy);
-            Integer optimistically_unchoked_prior = optimistically_unchoked;
-            optimistically_unchoked = interested_neighbors_list.get(random.nextInt(interested_neighbors_list.size())).getPeerID();
-
-            // if they're the same, then don't resend redundant unchoke message
-            if(optimistically_unchoked_prior == null || !optimistically_unchoked_prior.equals(optimistically_unchoked)) {
+                // randomly select a value from the priority queue (can't one liner this bc size needs to be extracted)
+                ArrayList<Download> interested_neighbors_list = new ArrayList<>(interestedNeighborsCopy);
+                Integer optimistically_unchoked_prior = optimistically_unchoked;
+                optimistically_unchoked = interested_neighbors_list.get(random.nextInt(interested_neighbors_list.size())).getPeerID();
                 logger.changeOptimisticallyUnchokedLog();
-                MessageResponse mr = new MessageResponse();
-                mr.addToUnchokedNeighbors(peerID, optimistically_unchoked);
-                mr.sendUnchokeMessage(peerID, optimistically_unchoked);
-                System.out.println(peerID + " optimistically unchoked " + optimistically_unchoked);
-            }
 
+                // if they're the same, then don't resend redundant unchoke message
+                if (optimistically_unchoked_prior == null || !optimistically_unchoked_prior.equals(optimistically_unchoked)) {
+//                    logger.changeOptimisticallyUnchokedLog();
+                    MessageResponse mr = new MessageResponse();
+                    mr.addToUnchokedNeighbors(peerID, optimistically_unchoked);
+                    mr.sendUnchokeMessage(peerID, optimistically_unchoked);
+                    System.out.println(peerID + " optimistically unchoked " + optimistically_unchoked);
+                }
+            }
         }
     }
 
