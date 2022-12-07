@@ -293,7 +293,7 @@ public class Peer extends Thread{
     }
     // to create functionality here, need to find out how to calculate the download rate for each neighbor
     class UpdatePreferredNeighbors extends TimerTask {
-        synchronized public void run() { // this may need to be synchronized but I don't think it does
+        public void run() { // this may need to be synchronized but I don't think it does
             //System.out.println("preferred neighbors updated for peer " + peerID);
 
             if(can_close_connection) {
@@ -353,7 +353,9 @@ public class Peer extends Thread{
                     Download top = neighs.poll();
                     if (getInterestedNeighbors().contains(top.getPeerID())) {
                         mr.addToUnchokedNeighbors(peerID, top.getPeerID());
-                        mr.sendUnchokeMessage(peerID, top.getPeerID());
+                        if(top.getPeerID() != optimistically_unchoked) {
+                            mr.sendUnchokeMessage(peerID, top.getPeerID());
+                        }
                         count++;
                     }
                 }
@@ -370,7 +372,7 @@ public class Peer extends Thread{
     }
 
     class UpdateOptimisticallyUnchokedNeighbor extends TimerTask {
-        synchronized public void run() { // this may need to be synchronized but I don't think it does
+        public void run() { // this may need to be synchronized but I don't think it does
 
             if(can_close_connection) {
                 return;
