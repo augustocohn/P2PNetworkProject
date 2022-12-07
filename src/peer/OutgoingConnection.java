@@ -53,6 +53,7 @@ public class OutgoingConnection extends Thread {
 
             try {
                 portConnection = new Socket(this.destinationHost, this.destinationPortNum);
+                peer.getLogger().tcpConnectionToLog(connectedPeerID);
                 out = new ObjectOutputStream(portConnection.getOutputStream());
                 break;
             } catch(Exception e) {

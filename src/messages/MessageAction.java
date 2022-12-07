@@ -51,12 +51,18 @@ public class MessageAction {
         Peer peer = Peer.getPeerByID(peerID);
         bitUtil.placePiece(peerID, index, piece);
         peer.getRequested_pieces().remove(connectedPeerID);
-        peer.
+        peer.incrementPieceCount();
     }
 
     public void updateBitField(int peerID, int index){
+        Peer peer = Peer.getPeerByID(peerID);
         BitFieldUtility bitUtil = new BitFieldUtility();
         bitUtil.updateBitfield(peerID, index);
+        bitUtil.isBitFieldFull(peerID);
+        if(peer.hasCompleteFile()){
+            peer.getLogger().completeFileDownloadLog();
+            peer.downloadComplete();
+        }
     }
 
     public void updateDownloadSpeed(int peerID, int connectedPeerID) {

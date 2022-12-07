@@ -88,7 +88,7 @@ public final class BitFieldUtility {
 
     }
 
-    public boolean isBitFieldFull(int peerID) {
+    public void isBitFieldFull(int peerID) {
         Peer peer = Peer.getPeerByID(peerID);
 
         byte full = (byte)0b11111111;
@@ -97,7 +97,7 @@ public final class BitFieldUtility {
 
             byte temp = (byte)(full & peer.getLocalBitField()[i]);
             if(temp != full) {
-                return false;
+                return;
             }
 
         }
@@ -106,9 +106,9 @@ public final class BitFieldUtility {
         //account for that last byte
         int mod = pieces%8;
         if(lastPos[mod] != peer.getLocalBitField()[peer.getLocalBitField().length - 1]) {
-            return false;
+            return;
         }
-        return true;
+        peer.downloadComplete();
 
     }
 

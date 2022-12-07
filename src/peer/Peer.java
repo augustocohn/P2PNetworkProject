@@ -27,6 +27,8 @@ public class Peer extends Thread{
 
     private int pieceCount;
 
+    private boolean hasFile = false;
+
     // should we have a static hashmap of ID's to servers so a getinstance method by ID will allow for the returning of the correct thread/object
     private static HashMap<Integer, Peer> peers = new HashMap<>();
 
@@ -149,6 +151,14 @@ public class Peer extends Thread{
         return this.logger;
     }
 
+    public boolean hasCompleteFile(){
+        return this.hasFile;
+    }
+
+    public void downloadComplete(){
+        this.hasFile = true;
+    }
+
     public void setFile(byte[] _file){
         this.file = _file;
     }
@@ -173,16 +183,16 @@ public class Peer extends Thread{
 
         String fileName = CommonConfigParser.getCommonMetaData().getFileName();
         this.fileLocation = Paths.get(System.getProperty("user.dir") + "\\" + peerID + "\\" + fileName);
-        boolean hasFile = PeerConfigParser.getPeerMetaData(peerID).hasFile();
+        this.hasFile = PeerConfigParser.getPeerMetaData(peerID).hasFile();
 
         this.logger = new Logger(this.peerID);
 
-        initializeBitField(hasFile, calculatePieces());
+        initializeBitField(this.hasFile, calculatePieces());
 
         //TODO Initialize file[] to proper size
         file = new byte[CommonConfigParser.getCommonMetaData().getFileSize()];
 
-        if(hasFile){
+        if(this.hasFile){
             try {
                 pieceCount = calculatePieces();
                 file = Files.readAllBytes(this.fileLocation);
@@ -245,7 +255,7 @@ public class Peer extends Thread{
         Collection<Peer> tempPeers = Peer.getPeers().values();
 
         for (Peer tempPeer : tempPeers) {
-            if (!bitUtil.isBitFieldFull(tempPeer.getPeerID())) {
+            if (!tempPeer.hasCompleteFile()) {
                 return;
             }
         }
@@ -320,6 +330,9 @@ public class Peer extends Thread{
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
+
+        logger.closeFileWriter();
+
         System.out.println("Client thread " + this.peerID + " has ended");
 
     }
@@ -342,7 +355,7 @@ public class Peer extends Thread{
 
             preferredNeighbors.clear();
 
-            if(bitUtil.isBitFieldFull(peerID)) {  //if bitfield is full
+            if(hasCompleteFile()) {  //if bitfield is full
 
                 // this peer has a full file, the preferred neighbors are randomly selected
 
@@ -362,7 +375,7 @@ public class Peer extends Thread{
 
                     mr.addToUnchokedNeighbors(peerID, tempInterested);
                     preferredNeighbors.add(tempInterested);
-                    if(optimistically_unchoked == null || tempInterested != optimistically_unchoked) {
+                    if(optimistically_unchoked == null || tempInterested != optimistically_unchoked && !Peer.getPeerByID(tempInterested).hasCompleteFile()) {
                         mr.sendUnchokeMessage(peerID, tempInterested);
                     }
 
@@ -392,6 +405,7 @@ public class Peer extends Thread{
                 }
 
             }
+            logger.changePreferredNeighborsLog();
         }
 
     }
@@ -434,6 +448,7 @@ public class Peer extends Thread{
 
             // if they're the same, then don't resend redundant unchoke message
             if(optimistically_unchoked_prior == null || !optimistically_unchoked_prior.equals(optimistically_unchoked)) {
+                logger.changeOptimisticallyUnchokedLog();
                 MessageResponse mr = new MessageResponse();
                 mr.addToUnchokedNeighbors(peerID, optimistically_unchoked);
                 mr.sendUnchokeMessage(peerID, optimistically_unchoked);

@@ -76,6 +76,9 @@ public class MessageResponse {
 
     public void sendInterestedMessage(int peerID, int connectedPeerID){
         Peer peer = Peer.getPeerByID(peerID);
+        if(Peer.getPeerByID(connectedPeerID).getInterestedNeighbors().contains(peerID)){
+            return;
+        }
         for(OutgoingConnection ogc : peer.getOutgoingConnections()){
             if(ogc.getConnectedPeerID() == connectedPeerID){
                 ogc.sendInterestedMessage();
@@ -85,6 +88,9 @@ public class MessageResponse {
 
     public void sendNotInterestedMessage(int peerID, int connectedPeerID){
         Peer peer = Peer.getPeerByID(peerID);
+        if(!Peer.getPeerByID(connectedPeerID).getInterestedNeighbors().contains(peerID)){
+            return;
+        }
         for(OutgoingConnection ogc : peer.getOutgoingConnections()){
             if(ogc.getConnectedPeerID() == connectedPeerID){
                 ogc.sendNotInterestedMessage();
@@ -99,7 +105,8 @@ public class MessageResponse {
                 BitFieldUtility bitUtil = new BitFieldUtility();
                 Integer index = bitUtil.getRequestIndex(peerID, connectedPeerID); //TODO need to test to make sure it is getting a valid request index
                 if(index == null) {
-                    System.out.println("null index in send request message");
+                    System.out.println("State of " + peerID + " bitfield " + peer.hasCompleteFile() + " | State of " + connectedPeerID + " bitfield " + Peer.getPeerByID(connectedPeerID).hasCompleteFile());
+                    System.out.println("null index in request message | " + peerID + " -> " + connectedPeerID);
                     return;
                 }
                 peer.getRequested_pieces().put(connectedPeerID, index);
@@ -111,10 +118,9 @@ public class MessageResponse {
     public void sendAnotherRequest(int peerID, int connectedPeerID) {
         Peer peer = Peer.getPeerByID(peerID);
         Peer connectedPeer = Peer.getPeerByID(connectedPeerID);
-        BitFieldUtility bitUtil = new BitFieldUtility();
 
         //condition should ensure the bitfield is not full
-        if(!bitUtil.isBitFieldFull(peerID) && connectedPeer.getInterestedNeighbors().contains(peerID) && !peer.getChokedby().contains(connectedPeerID)) {
+        if(!peer.hasCompleteFile() && connectedPeer.getInterestedNeighbors().contains(peerID) && !peer.getChokedby().contains(connectedPeerID)) {
             sendRequestMessage(peerID, connectedPeerID);
         }
 

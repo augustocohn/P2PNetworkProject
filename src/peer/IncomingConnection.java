@@ -110,6 +110,7 @@ public class IncomingConnection extends Thread {
             System.out.println(peerID + " received handshake from " + connectedPeerID);
             if(connectedPeerID == -1) { throw new Exception("Invalid handshake message received"); }
 
+            Peer.getPeerByID(peerID).getLogger().tcpConnectionFromLog(connectedPeerID);
 
             MessageResponse mr = new MessageResponse();
             // run an infinite loop that parses incoming messages until the connection closes

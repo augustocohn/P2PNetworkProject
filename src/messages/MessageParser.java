@@ -32,6 +32,9 @@ public class MessageParser {
 
             case 2:
                 //interested
+                if(Peer.getPeerByID(connectedPeer).hasCompleteFile()){
+                    break;
+                }
                 ma.addToInterestedNeighbors(peerID, connectedPeer);
                 Peer.getPeerByID(peerID).getLogger().receiveInterestedLog(connectedPeer);
                 break;
@@ -59,6 +62,7 @@ public class MessageParser {
             case 6:
                 //request message | kick off sending piece message
                 index = (ByteBuffer.wrap(message.getMessagePayload())).getInt();
+                Peer.getPeerByID(peerID).getLogger().receiveRequestLog(connectedPeer, index);
                 mr.sendPieceMessage(peerID, connectedPeer, index);
                 break;
 

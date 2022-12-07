@@ -48,7 +48,7 @@ public class Logger {
 
     public void tcpConnectionToLog(int connectedPeerID) {
         try {
-            String toWrite = generateCurrentDateTime() + " : Peer " + this.peerID + " makes a connection to " + connectedPeerID + "\n";
+            String toWrite = generateCurrentDateTime() + " : Peer " + this.peerID + " makes a connection to " + connectedPeerID + ".\n";
             this.fileWriter.write(toWrite);
         }  catch(Exception e) {
             System.out.println("Logger error");
@@ -57,7 +57,7 @@ public class Logger {
 
     public void tcpConnectionFromLog(int connectedPeerID) {
         try {
-            String toWrite = generateCurrentDateTime() + " : Peer " + this.peerID + " is connected from " + connectedPeerID + "\n";
+            String toWrite = generateCurrentDateTime() + " : Peer " + this.peerID + " is connected from " + connectedPeerID + ".\n";
             this.fileWriter.write(toWrite);
         } catch(Exception e) {
             System.out.println("Logger error");
@@ -76,6 +76,7 @@ public class Logger {
                     toWrite = toWrite + peerList.get(i) + ", ";
                 }
             }
+            toWrite = ".\n";
             this.fileWriter.write(toWrite);
         } catch(Exception e) {
             System.out.println("Logger error");
@@ -117,7 +118,7 @@ public class Logger {
 
     public void receiveHaveLog(int connectedPeerID, int pieceIndex) {
         try {
-            String toWrite = generateCurrentDateTime() + " : Peer " + this.peerID + " received the  ‘have’ message from " + connectedPeerID + " for the piece " + pieceIndex + ".\n";
+            String toWrite = generateCurrentDateTime() + " : Peer " + this.peerID + " received the ‘have’ message from " + connectedPeerID + " for the piece " + pieceIndex + ".\n";
             this.fileWriter.write(toWrite);
         } catch(Exception e) {
             System.out.println("Logger error");
@@ -138,6 +139,15 @@ public class Logger {
             String toWrite = generateCurrentDateTime() + " : Peer " + this.peerID + " received the ‘not interested’ message from " + connectedPeerID + ".\n";
             this.fileWriter.write(toWrite);
         } catch(Exception e) {
+            System.out.println("Logger error");
+        }
+    }
+
+    public void receiveRequestLog(int connectedPeerID, int pieceIndex){
+        try{
+            String toWrite = generateCurrentDateTime() + " : Peer " + this.peerID + " received ‘request‘ message from " + connectedPeerID + " for the piece " + pieceIndex + ".\n";
+            this.fileWriter.write(toWrite);
+        }catch(Exception e){
             System.out.println("Logger error");
         }
     }
