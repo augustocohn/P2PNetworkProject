@@ -8,7 +8,7 @@ import peer.PeerMetaData;
 
 public class StartUp extends Thread{
 
-    public void run() {
+    public void run(int peerID) {
         // global read-in/parsing of peer info configuration file
         PeerConfigParser.loadPeerMetaData();
         //ArrayList<PeerMetaData> peersMetaData = PeerConfigParser.getPeersMetaData();
@@ -19,9 +19,14 @@ public class StartUp extends Thread{
 
         // start up connections with servers using read-in data
         for(PeerMetaData pmd : PeerConfigParser.getPeersMetaData()){
-            System.out.println("Adding peer: " + pmd.getPeerID());
-            Peer p = new Peer(pmd.getPeerID());
-            p.start();
+            if(peerID == pmd.getPeerID()) {
+                System.out.println("Adding peer: " + pmd.getPeerID());
+                Peer p = new Peer(pmd.getPeerID());
+                p.start();
+            }
+            else{
+                continue;
+            }
             try {
                 Thread.sleep(2000);
             } catch (InterruptedException e) {

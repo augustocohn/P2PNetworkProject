@@ -17,6 +17,8 @@ build:
     javac -d ./objects -cp ./objects ./src/startup/StartUp.java
     javac -d ./objects -cp ./objects ./src/utils/BitFieldUtility.java
     javac -d ./objects -cp ./objects ./src/utils/FileUtility.java
+    javac -d ./objects -cp ./objects ./src/remoteStartUp/RemotePeerInfo.java
+    javac -d ./objects -cp ./objects ./src/remoteStartUp/StartRemotePeers.java
 
 clean:
     rm ./objects/*.class
